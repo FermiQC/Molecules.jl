@@ -1,0 +1,8 @@
+name = "Molecules"
+uuid = "5de6a177-b489-40a9-b2f4-524242b9b679"
+authors = ["gustavojra <gustavo.aroeira@gmail.com>"]
+version = "0.1.0"
+
+[deps]
+PeriodicTable = "7b2266bf-644c-5ea3-82d8-af4bbd25a884"
+Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
