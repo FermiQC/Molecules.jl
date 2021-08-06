@@ -4,7 +4,7 @@ Package for representation and manipulation of Atoms in Cartesian space and comp
 
 # TODO list
 
-- [X] Atom basic `struc`
+- [X] Atom basic `struct`
 - [X] XYZ file parsing
 - [ ] XYZ ⇔ ZMAT conversion
 - [ ] XYZ translation and rotation
