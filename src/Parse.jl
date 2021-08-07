@@ -1,8 +1,26 @@
+"""
+    Molecules.function parse_file(file::String; unit=:angstrom, F=Float64, I=Int16)
+
+Reads a xyz file and return a vector o `Atom` objects. Units can be indicated through the keyword argument `unit`.
+Coordinates and mass are stored as `F` (`Float64` by default) and atomic number is taken as `I` (`Int16` by default), 
+where `F` and `I` are keyword arguments.
+
+See also: parse_string
+"""
 function parse_file(file::String; unit=:angstrom, F=Float64, I=Int16)
     molstring = read(file, String)
     parse_string(molstring::String; unit=unit, F=F, I=I)
 end
 
+"""
+    Molecules.function parse_string(molstring::String; unit=:angstrom, F=Float64, I=Int16)
+
+Reads a String representing a XYZ file and return a vector o `Atom` objects. Units can be indicated through the keyword argument `unit`.
+Coordinates and mass are stored as `F` (`Float64` by default) and atomic number is taken as `I` (`Int16` by default), 
+where `F` and `I` are keyword arguments.
+
+See also: parse_file
+"""
 function parse_string(molstring::String; unit=:angstrom, F=Float64, I=Int16)
 
     # Get a list of Atom objects from String
@@ -33,7 +51,8 @@ function parse_string(molstring::String; unit=:angstrom, F=Float64, I=Int16)
 
         if contains(line, r1)
             m = match(r1, line)
-            id = Symbol(m.captures[1])
+            # id is taken as a Symbol if a String is given ("H" → :H), otherwise convert to number ("6" → 6)
+            id = occursin(r"\d+", m.captures[1]) ? parse(Int64, m.captures[1]) : Symbol(m.captures[1])
 
             # Try to parse Mass string into a Float
             try
@@ -45,7 +64,8 @@ function parse_string(molstring::String; unit=:angstrom, F=Float64, I=Int16)
 
         elseif contains(line, r2)
             m = match(r2, line)
-            id = Symbol(m.captures[1])
+            # id is taken as a Symbol if a String is given ("H" → :H), otherwise convert to number ("6" → 6)
+            id = occursin(r"\d+", m.captures[1]) ? parse(Int64, m.captures[1]) : Symbol(m.captures[1])
 
             # Get mass from PeriodicTable
             mass = convert(F, elements[id].atomic_mass / 1u"u")
@@ -54,7 +74,7 @@ function parse_string(molstring::String; unit=:angstrom, F=Float64, I=Int16)
             throw(ArgumentError("Failed to process data in line $line_num:\n $(line)"))
         end
 
-        Z = I(elements[Symbol(id)].number)
+        Z = I(elements[id].number)
 
         # Convert String vector to Float vector
         xyz = zeros(F, 3)
