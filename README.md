@@ -1,5 +1,7 @@
 # Molecules.jl
 
+[![CI](https://github.com/FermiQC/Molecules.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/FermiQC/Molecules.jl/actions/workflows/CI.yml)
+
 Package for representation and manipulation of Atoms in Cartesian space and computation of properties that are dependant on nuclei position only. 
 
 # TODO list
