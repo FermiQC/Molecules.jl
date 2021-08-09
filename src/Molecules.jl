@@ -30,6 +30,6 @@ include("Parse.jl")
 # include("Manipulations.jl")
 include("Properties.jl")
 # include("RotationalEnergy.jl")
-# include("PointGroup.jl")
-
+include("PointGroup/PointGroup.jl")
+# include("Symmetry/Symmetry.jl")
 end # module
