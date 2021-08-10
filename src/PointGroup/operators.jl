@@ -5,7 +5,7 @@ function Cn(v, n)
     cosθ = cos(θ)
     sinθ = sin(θ)
     a = [1,2,3]
-    O = zeros(Float64, (3,3))
+    O = zeros(eltype(v), (3,3))
     O .+= 1 - cosθ
     for i = 1:3, j = 1:3
         if i == j
@@ -26,7 +26,7 @@ function Cn(v, n)
 end
 
 function σ(v)
-    O = zeros(Float64, (3,3))
+    O = zeros(eltype(v), (3,3))
     for i = 1:3, j = i:3
         if i == j
             O[i,i] = 1 - 2*v[i]^2
@@ -40,4 +40,12 @@ end
 
 function Sn(v, n)
     return Cn(v, n) * σ(v)
+end
+
+function i()
+    a = zeros(Int8, (3,3))
+    for i = 1:3
+        a[i,i] = -1
+    end
+    return a
 end
