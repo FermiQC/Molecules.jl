@@ -22,3 +22,20 @@ function nuclear_repulsion(atoms::Molecule)
     end
     return E
 end
+
+"""
+    Molecules.center_of_mass(atoms::Molecule)
+
+Returns the center of mass of a group if atoms.
+"""
+function center_of_mass(atoms::Molecule)
+
+    # Compute the mass-weighted XYZ
+    cm_xyz = sum(a.xyz * a.mass for a in atoms)
+
+    # Compute total mass
+    M = sum(a.mass for a in atoms)
+
+    # Return center of mass
+    return cm_xyz ./ M
+end
