@@ -1,4 +1,4 @@
-export Cn, σ, Sn, i
+export Cn, σ, Sn, i, transform, issame
 
 function Cn(v, n)
     θ = 2*π / n
@@ -48,4 +48,30 @@ function i()
         a[i,i] = -1
     end
     return a
+end
+
+function transform(A, O)
+    len = size(A)[1]
+    out = []
+    for i = 1:len
+        newxyz = O * A[i].xyz
+        push!(out, Atom(A[i].Z, A[i].mass, newxyz))
+    end
+    return out
+end
+
+function issame(A, B)
+    h = []
+    len = size(A)[1]
+    for i = 1:len
+        for j = 1:len
+            if A[i].mass == B[j].mass
+                if isapprox(A[i].xyz, B[j].xyz, rtol=1E-5)
+                    push!(h, i)
+                    break
+                end
+            end
+        end
+    end
+    return size(h)[1] == len
 end
