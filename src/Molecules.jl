@@ -29,7 +29,7 @@ Molecule = Vector{A} where A <: Atom
 
 include("Parse.jl")
 include("Transformations.jl")
-include("ZMAT.jl")
+#include("ZMAT.jl")
 include("Properties.jl")
 # include("RotationalEnergy.jl")
 include("PointGroup/PointGroup.jl")
