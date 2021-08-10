@@ -20,14 +20,6 @@ tol = 1E-5
         sea = findSEA(D, 5)
         @test isapprox(sea, SEAs[i], rtol=tol)
     
-        com = calcCOM(mol)
-        @test isapprox(com, COMs[i], rtol=tol)
-    
-        comshift = centerXYZ(mol)
-        for j in 1:size(mol)[1]
-            @test isapprox(comshift[j].xyz, COMshifts[i][j].xyz, rtol=tol)
-        end
-
         moit = calcmoit(mol)
         @test isapprox(moit, MOITs[i], rtol=tol)
     
