@@ -28,7 +28,7 @@ end
 Molecule = Vector{A} where A <: Atom
 
 include("Parse.jl")
-# include("Manipulations.jl")
+include("Transformations.jl")
 include("ZMAT.jl")
 include("Properties.jl")
 # include("RotationalEnergy.jl")
