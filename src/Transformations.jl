@@ -27,8 +27,17 @@ end
 
 Returns an n rotation matrix about vector v
 """
-function Cn(v, n)
+function Cn(v, n::Integer)
     θ = 2*π / n
+    return rotate(v, θ)
+end
+
+"""
+    Molecules.rotate(v, θ::AbstractFloat)
+
+Returns a rotation matrix by θ about a rotation axis v
+"""
+function rotate(v, θ::AbstractFloat)
     cosθ = cos(θ)
     sinθ = sin(θ)
     a = [1,2,3]
@@ -53,11 +62,11 @@ function Cn(v, n)
 end
 
 """
-    Molecules.σ(v::Vector)
+    Molecules.reflect(v::Vector)
 
 Returns a reflection matrix through the plane with normal vector v
 """
-function σ(v)
+function reflect(v)
     O = zeros(eltype(v), (3,3))
     for i = 1:3, j = i:3
         if i == j
@@ -68,6 +77,10 @@ function σ(v)
         end
     end
     return O
+end
+
+function σ(v)
+    return reflect(v)
 end
 
 """
