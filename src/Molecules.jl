@@ -3,6 +3,7 @@ module Molecules
 using Unitful
 using PeriodicTable
 using LinearAlgebra
+using Formatting
 
 import PhysicalConstants.CODATA2018: a_0
 
@@ -27,7 +28,8 @@ end
 Molecule = Vector{A} where A <: Atom
 
 include("Parse.jl")
-# include("Manipulations.jl")
+include("Transformations.jl")
+#include("ZMAT.jl")
 include("Properties.jl")
 # include("RotationalEnergy.jl")
 include("PointGroup/PointGroup.jl")

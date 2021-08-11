@@ -36,7 +36,7 @@ function parse_string(molstring::String; unit=:angstrom, F=Float64, I=Int16)
     # Match a floating point, e.g. XYZ coordinate or mass, with at least one blank space on the left of it
     re_float = r"\s+([+-]?(?:\d+[.]?\d*|\d*[.]?\d+))"
     # Match an atom id (String for atomic symbol or integer for atomic number) with one or more blank spaces on the left of it
-    re_id = r"\s*(\d*|\w{1,2})"
+    re_id = r"\s*(\d+|\w{1,2})"
 
     atoms = Atom{I,F}[]
 
