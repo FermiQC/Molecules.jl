@@ -1,4 +1,4 @@
-import Molecules: translate, Cn, σ, Sn, i, transform, issame
+import Molecules: translate, Cn, σ, Sn, i, transform, isequivalent
 
 @testset "Transformations" begin
     @testset "Translate" begin
@@ -38,8 +38,8 @@ import Molecules: translate, Cn, σ, Sn, i, transform, issame
         for i = 1:size(ops)[1]
             H2b = transform(H2, ops[i])
             H2Ob = transform(H2O, ops[i])
-            @test issame(H2, H2b) == H2ret[i]
-            @test issame(H2O, H2Ob) == H2Oret[i]
+            @test isequivalent(H2, H2b) == H2ret[i]
+            @test isequivalent(H2O, H2Ob) == H2Oret[i]
         end
         
     end

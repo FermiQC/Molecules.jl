@@ -29,15 +29,15 @@ Returns an n rotation matrix about vector v
 """
 function Cn(v, n::Integer)
     θ = 2*π / n
-    return rotate(v, θ)
+    return rotation_matrix(v, θ)
 end
 
 """
-    Molecules.rotate(v, θ::AbstractFloat)
+    Molecules.rotation_matrix(v, θ::AbstractFloat)
 
 Returns a rotation matrix by θ about a rotation axis v
 """
-function rotate(v, θ::AbstractFloat)
+function rotation_matrix(v, θ::AbstractFloat)
     cosθ = cos(θ)
     sinθ = sin(θ)
     a = [1,2,3]
@@ -62,11 +62,11 @@ function rotate(v, θ::AbstractFloat)
 end
 
 """
-    Molecules.reflect(v::Vector)
+    Molecules.reflection_matrix(v::Vector)
 
 Returns a reflection matrix through the plane with normal vector v
 """
-function reflect(v)
+function reflection_matrix(v)
     O = zeros(eltype(v), (3,3))
     for i = 1:3, j = i:3
         if i == j
@@ -80,7 +80,7 @@ function reflect(v)
 end
 
 function σ(v)
-    return reflect(v)
+    return reflection_matrix(v)
 end
 
 """
@@ -93,11 +93,11 @@ function Sn(v, n)
 end
 
 """
-    Molecules.i()
+    Molecules.inversion_matrix()
 
 Returns a diagonal matrix with -1 along the diagonal
 """
-function i()
+function inversion_matrix()
     a = zeros(Int8, (3,3))
     for i = 1:3
         a[i,i] = -1
@@ -105,6 +105,10 @@ function i()
     return a
 end
 
+function i()
+    return inversion_matrix()
+end
+    
 """
     Molecules.transform!(A::Molecule, O::Array)
 
@@ -133,10 +137,10 @@ end
 """
     Molecules.issame(A::Molecule, B::Molecule)
 
-Checks to see if two lists of atoms are equivalent under permutation
+Checks to see if two arrays of atoms are equivalent under permutation
 Returns true or false
 """
-function issame(A::Molecule, B::Molecule)
+function isequivalent(A::Molecule, B::Molecule)
     h = []
     len = size(A)[1]
     for i = 1:len
