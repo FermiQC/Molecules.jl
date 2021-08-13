@@ -1,4 +1,4 @@
-export buildD, findSEA
+export buildD, findSEA, checkSEA
 
 struct DistanceMatrix
     atoms::Vector{Any}
@@ -34,7 +34,7 @@ function checkSEA(A::Vector{Float64}, B::Vector{Float64}, δ)::Bool
     b = sort(B)
     z = a - b
     for i in z
-        if i < 10.0^(-δ)
+        if abs(i) < 10.0^(-δ)
             continue
         else
             return false

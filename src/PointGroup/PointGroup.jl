@@ -4,5 +4,7 @@ using Molecules
 
 include("sea.jl")
 include("moit.jl")
-include("operators.jl")
+include("find_rotations.jl")
+
 end
+
