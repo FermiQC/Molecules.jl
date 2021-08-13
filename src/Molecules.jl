@@ -7,7 +7,7 @@ using Formatting
 
 import PhysicalConstants.CODATA2018: a_0
 
-export Atom
+export Atom, Molecule
 
 bohr_to_angstrom = convert(Float64, a_0 / 1u"Å")
 
