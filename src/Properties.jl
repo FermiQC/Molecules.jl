@@ -1,4 +1,13 @@
 """
+    Molecules.symbol(A::Atom)
+
+Returns a String representing the atomic symbol of the atom.
+"""
+function symbol(A::Atom)
+    return elements[A.Z].symbol
+end
+
+"""
     Molecules.nuclear_repulsion(A::Atom, B::Atom)
 
 Returns the repulsion energy between atoms A and B in Atomic units.
@@ -21,6 +30,22 @@ function nuclear_repulsion(atoms::Molecule)
         end
     end
     return E
+end
+
+function ∇nuclear_repulsion(atoms::Molecule, i)
+    E = zeros(3)
+
+    A = atoms[i]
+
+    for B in atoms
+        B == A ? continue : nothing
+
+        D = √((A.xyz.-B.xyz)⋅(A.xyz.-B.xyz))/bohr_to_angstrom
+
+        E -= (B.Z / D^3) .* (A.xyz - B.xyz)/bohr_to_angstrom
+    end
+
+    return A.Z .* E ./ bohr_to_angstrom
 end
 
 """
