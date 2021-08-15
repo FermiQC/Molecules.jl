@@ -90,3 +90,16 @@ function parse_string(molstring::String; unit=:angstrom, F=Float64, I=Int16)
 
     return atoms
 end
+
+"""
+    get_xyz(M::Molecule)
+
+Returns a XYZ string in angstrom for the given Molecule.
+"""
+function get_xyz(M::Molecule)
+    molstring = ""
+    for A in M
+        molstring *= format("{}   {: 15.12f}   {: 15.12f}   {: 15.12f}\n", Molecules.symbol(A), A.xyz...)
+    end
+    return molstring
+end
