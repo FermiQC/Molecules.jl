@@ -142,7 +142,7 @@ Returns true or false
 """
 function isequivalent(A::Molecule, B::Molecule)
     h = []
-    len = size(A)[1]
+    len = size(A,1)
     for i = 1:len
         for j = 1:len
             if A[i].mass == B[j].mass
@@ -153,5 +153,5 @@ function isequivalent(A::Molecule, B::Molecule)
             end
         end
     end
-    return size(h)[1] == len
+    return size(h,1) == len
 end
