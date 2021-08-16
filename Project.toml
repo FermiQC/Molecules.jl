@@ -1,7 +1,7 @@
 name = "Molecules"
 uuid = "5de6a177-b489-40a9-b2f4-524242b9b679"
 authors = ["gustavojra <gustavo.aroeira@gmail.com>"]
-version = "0.1.0"
+version = "0.1.1"
 
 [deps]
 Formatting = "59287772-0a20-5a39-b81b-1366585eb4c0"
@@ -12,6 +12,7 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
 [compat]
+Formatting = "0.4"
 PeriodicTable = "1.1"
 PhysicalConstants = "0.2"
 Unitful = "1.9"
