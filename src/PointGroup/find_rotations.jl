@@ -1,7 +1,7 @@
 export find_rotation_sets
 
-struct rotation_element
-    axis::Vector{Any}
+struct rotation_element{F}
+    axis::Vector{F}
     order::Int
 end
 
@@ -17,27 +17,33 @@ function rotation_set_intersection(rotation_set)
         for i = 1:size(rotation_set)[1]
             intersect!(out, rotation_set[i])
         end
-    end    
+    end
     return out
 end
 
-function find_rotation_sets(mol::Molecule, SEAs::AbstractArray)
+function find_rotation_sets(mol::Molecule, SEAs)
     out = []
-    for seaidx in SEAs
+    tol = 1E-5
+    for sea in SEAs
         outinloop = []
-        len = size(seaidx)[1]
-        sea = [mol[i] for i in seaidx]
+        len = size(sea.set)[1]
+        #sea = [mol[i] for i in seaidx]
         if len < 2
-            println("single atom")
+            sea.label = "Single Atom"
         elseif len == 2
-            println("linear")
+            sea.label = "Linear"
+            sea.paxis = mol[sea.set[1]].xyz - mol[sea.set[2]].xyz
         else
-            moit = eigenmoit(calcmoit(sea))
+            moit = eigenmoit(calcmoit([mol[i] for i in sea.set]))
             Ia, Ib, Ic = moit[1]
             Iav, Ibv, Icv = [moit[2][:,idx] for idx = 1:3]
-            if Ia + Ib == Ic
+            if isapprox(Ia, Ib, rtol=tol) && isapprox(Ia, Ic, rtol=tol)
+                sea.label = "Spherical"
+            elseif isapprox(Ia+Ib, Ic, rtol=tol)
                 paxis = Icv
-                if Ia == Ib
+                if isapprox(Ia, Ib, rtol=tol)
+                    sea.label = "Regular Polygon"
+                    sea.paxis = paxis
                     for i = 2:len
                         if isfactor(len, i)
                             re = rotation_element(paxis, i)
@@ -45,6 +51,8 @@ function find_rotation_sets(mol::Molecule, SEAs::AbstractArray)
                         end
                     end
                 else
+                    sea.label = "Irregular Polygon"
+                    sea.paxis = paxis
                     for i = 2:len-1
                         if isfactor(len, i)
                             re = rotation_element(paxis, i)
@@ -54,6 +62,7 @@ function find_rotation_sets(mol::Molecule, SEAs::AbstractArray)
                 end
             else
                 if Ia != Ib != Ic
+                    sea.label = "Asymmetric Rotor"
                     for i in [Iav, Ibv, Icv]
                         re = rotation_element(i, 2)
                         push!(outinloop, re)
@@ -61,10 +70,14 @@ function find_rotation_sets(mol::Molecule, SEAs::AbstractArray)
                 else
                     if Ia == Ib
                         paxis = Icv
+                        sea.label = "Oblate Symmetric Top"
+                        sea.paxis = paxis
                     else
                         paxis = Iav
+                        sea.label = "Prolate Symmetric Top"
+                        sea.paxis = paxis
                     end
-                    k = len / 2
+                    k = div(len, 2)
                     for i = 2:k
                         if isfactor(k, i)
                             re = rotation_element(paxis, i)
@@ -73,8 +86,8 @@ function find_rotation_sets(mol::Molecule, SEAs::AbstractArray)
                     end
                 end
             end
+            push!(out, outinloop)
         end
-        push!(out, outinloop)
     end
     return out
 end
@@ -88,5 +101,195 @@ function isfactor(n, a)
 end
 
 function find_rotations(mol::Molecule, rotation_set)
-    println(rotation_set_intersection(rotation_set))
+    molmoit = eigenmoit(calcmoit(mol))
+    if molmoit[1][1] == 0.0 && molmoit[1][2] == molmoit[1][3]
+        paxis = normalize(mol[1].xyz)
+        re = rotation_element(paxis, 0)
+        return [re]
+    end
+    rsi = rotation_set_intersection(rotation_set)
+    out = []
+    for i in rsi
+        rmat = Molecules.Cn(i.axis, i.order)
+        molB = Molecules.transform(mol, rmat)
+        c = Molecules.isequivalent(molB, mol)
+        if c
+            push!(out, i)
+        end
+    end
+    return out
+end
+
+function find_c2(mol::Molecule, SEAs)
+    len = size(mol)[1]
+    for sea in SEAs
+        a = c2a(mol, sea)
+        if a !== nothing
+            return a 
+        else
+            b = c2b(mol, sea)
+            if b !== nothing
+                return b
+            else
+
+                if sea.label == "linear"
+                    for sea2 in SEAs
+                        if sea == sea2
+                            continue
+                        elseif sea2.label == "linear"
+                            c = c2c(mol, sea, sea2)
+                            if c !== nothing
+                                return c
+                            end
+                        end
+                    end
+                end     
+            end
+        end    
+    end
+    return nothing
+end
+
+function is_there_ortho_c2(mol::Molecule, cn_axis::Vector{T}, SEAs) where T
+    len = size(mol)[1]
+    for sea in SEAs
+        if c2a(mol, cn_axis, sea)
+            return true
+        elseif c2b(mol, cn_axis, sea)
+            return true
+        elseif sea.label == "linear"
+            for sea2 in SEAs
+                if sea == sea2
+                    continue
+                elseif sea2.label == "linear"
+                    if c2c(mol, cn_axis, sea, sea2)
+                        return true
+                    end
+                end
+            end
+        end         
+    end
+    return false
+end
+
+function c2a(mol, cn_axis, sea)
+    len = size(sea.set)[1]
+    for i = 1:len-1, j = i+1:len
+        midpoint = normalize(mol[sea.set[i]].xyz + mol[sea.set[j]].xyz)
+        d = abs(midpoint ⋅ cn_axis)
+        if midpoint == [0.0, 0.0, 0.0]
+            continue
+        elseif isapprox(d, 1.0, rtol=1E-5)
+            continue
+        else
+            c2 = Molecules.Cn(midpoint, 2)
+            molB = Molecules.transform(mol, c2)
+            check = Molecules.isequivalent(mol, molB)
+            if check
+                return true
+            else
+                continue
+            end
+        end
+    end
+    return false
+end
+
+function c2b(mol, cn_axis, sea)
+    len = size(sea.set)[1]
+    for i = 1:len
+        c2_axis = normalize(mol[sea.set[i]].xyz)
+        d = c2_axis ⋅ cn_axis
+        if isapprox(d, 1.0, rtol=1E-5)
+            continue
+        else
+            c2 = Molecules.Cn(c2_axis, 2)
+            molB = Molecules.transform(mol, c2)
+            check = Molecules.isequivalent(mol, molB)
+            if check
+                return true
+            else
+                continue
+            end
+        end
+    end
+    return false
+end
+
+function c2c(mol, cn_axis, sea1, sea2)
+    rij = mol[sea1.set[1]].xyz - mol[sea1.set[2]].xyz
+    rkl = mol[sea2.set[1]].xyz - mol[sea2.set[2]].xyz
+    c2_axis = cross(rij, rkl)
+    d = c2_axis ⋅ cn_axis
+    if isapprox(d, 1.0, rtol=1E-5)
+        return false
+    else
+        c2 = Molecules.Cn(c2_axis, 2)
+        molB = Molecules.transform(mol, c2)
+        return Molecules.isequivalent(mol, molB)
+    end
+end
+
+function c2a(mol, sea)
+    len = size(sea.set)[1]
+    for i = 1:len-1, j = i+1:len
+        midpoint = normalize(mol[sea.set[i]].xyz + mol[sea.set[j]].xyz)
+        if midpoint == [0.0, 0.0, 0.0]
+            continue
+        else
+            c2 = Molecules.Cn(midpoint, 2)
+            molB = Molecules.transform(mol, c2)
+            check = Molecules.isequivalent(mol, molB)
+            if check
+                return midpoint
+            else
+                continue
+            end
+        end
+    end
+    return nothing
+end
+
+function c2b(mol, sea)
+    len = size(sea.set)[1]
+    for i = 1:len
+        c2_axis = normalize(mol[sea.set[i]].xyz)
+        c2 = Molecules.Cn(c2_axis, 2)
+        molB = Molecules.transform(mol, c2)
+        check = Molecules.isequivalent(mol, molB)
+        if check
+            return c2_axis
+        else
+            continue
+        end
+    end
+    return nothing
+end
+
+function c2c(mol, sea1, sea2)
+    rij = mol[sea1.set[1]].xyz - mol[sea1.set[2]].xyz
+    rkl = mol[sea2.set[1]].xyz - mol[sea2.set[2]].xyz
+    c2_axis = cross(rij, rkl)
+    c2 = Molecules.Cn(c2_axis, 2)
+    molB = Molecules.transform(mol, c2)
+    if Molecules.isequivalent(mol, molB)
+        return c2_axis
+    else
+        return nothing
+    end
+end
+
+function highest_ordered_axis(rotations::Vector{Any})
+    len = size(rotations)[1]
+    ns = []
+    for i = 1:len
+        push!(ns, rotations[i].order)
+    end
+    return sort(ns)[len]
+end
+
+function is_there_sigmah(mol::Molecule, paxis)
+    σh = Molecules.reflection_matrix(paxis)
+    molB = Molecules.transform(mol, σh)
+    return Molecules.isequivalent(mol, molB)
 end
