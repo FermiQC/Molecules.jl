@@ -61,6 +61,11 @@ function rotation_matrix(v, θ::AbstractFloat)
     return O
 end
 
+function rotation_matrixd(v, θ::AbstractFloat)
+    r = deg2rad(θ)
+    return rotation_matrix(v, r)
+end
+
 """
     Molecules.reflection_matrix(v::Vector)
 
@@ -116,9 +121,7 @@ Transforms xyz coordinates of each atom in A by some operation O
 """
 function transform!(atoms::Molecule, O::Array)
     for a in atoms
-        for i = 1:3
-            a.xyz[i] = sum(a.xyz[j]*O[i,j] for j = 1:3)
-        end
+        a.xyz .= O * a.xyz
     end
 end
 

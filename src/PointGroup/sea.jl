@@ -5,8 +5,10 @@ struct DistanceMatrix
     distances::AbstractArray
 end
 
-struct SEA
-    sets::Tuple
+mutable struct SEA{I,F}
+    label::String
+    set::Vector{I}
+    paxis::Vector{F}
 end
 
 function distance(A::Atom, B::Atom)
@@ -15,15 +17,15 @@ function distance(A::Atom, B::Atom)
     return (((a[1]-b[1])^2) + ((a[2]-b[2])^2) + ((a[3]-b[3])^2))^0.5
 end
 
-function buildD(V)
-    len = size(V)[1]
+function buildD(mol::Molecule)
+    len = size(mol)[1]
     atoms = []
     arr = zeros(Float64, (len,len))
     for i = 1:len
-        push!(atoms, V[i].Z)
+        push!(atoms, mol[i])
     end
     for i = 1:len, j = i+1:len
-        arr[i,j] = distance(V[i],V[j])
+        arr[i,j] = distance(mol[i], mol[j])
         arr[j,i] = arr[i,j]
     end
     return DistanceMatrix(atoms, arr)
@@ -47,7 +49,7 @@ function findSEA(D::DistanceMatrix, δ::Int)
     len = size(D.distances)[1]
     out = Tuple[]
     for i = 1:len, j = i+1:len
-        if cmp(D.atoms[i], D.atoms[j]) == 0
+        if cmp(D.atoms[i].mass, D.atoms[j].mass) == 0
             c = checkSEA(D.distances[:,i], D.distances[:,j], δ)
             if c
                 push!(out, (i,j))
@@ -55,7 +57,7 @@ function findSEA(D::DistanceMatrix, δ::Int)
         end
     end
     nonos = Int[]
-    biggerun = Vector{Int}[]
+    biggerun = SEA[]
     for i = 1:len
         if i in nonos
             continue
@@ -75,7 +77,8 @@ function findSEA(D::DistanceMatrix, δ::Int)
                 end
             end
         end
-    push!(biggerun, biggun)
+    sea = SEA("None", biggun, [0.0, 0.0, 0.0])
+    push!(biggerun, sea)
     end
 
     return biggerun
