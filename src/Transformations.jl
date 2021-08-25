@@ -146,10 +146,15 @@ Returns true or false
 function isequivalent(A::Molecule, B::Molecule)
     h = []
     len = size(A,1)
+    #println(A, "\n", B)
     for i = 1:len
         for j = 1:len
             if A[i].mass == B[j].mass
-                if isapprox(A[i].xyz, B[j].xyz, rtol=1E-5)
+                zs = broadcast(abs, A[i].xyz - B[j].xyz)
+                c =  isapprox(zs, [0.0,0.0,0.0], atol=1E-3)
+                #println(zs, " : ", c)
+                #if isapprox(broadcast(abs, A[i].xyz - B[j].xyz), [0.0,0.0,0.0], rtol=1E-5)
+                if c
                     push!(h, i)
                     break
                 end

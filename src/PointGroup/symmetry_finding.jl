@@ -293,3 +293,155 @@ function is_there_sigmah(mol::Molecule, paxis)
     molB = Molecules.transform(mol, σh)
     return Molecules.isequivalent(mol, molB)
 end
+
+function num_C2(mol::Molecule, SEAs)
+    axes = []
+    for sea in SEAs
+        a = all_c2a(mol, sea)
+        if a !== nothing
+            for i in a
+                push!(axes, i)
+            end
+        end
+
+        b = all_c2b(mol, sea)
+        if b !== nothing
+            for i in b
+                push!(axes, i)
+            end
+        end
+    end
+    if size(axes)[1] < 1
+        return nothing
+    end
+    unique_axes = [axes[1]]
+    for i in axes
+        check = true
+        for j in unique_axes
+            if issame_axis(i,j)
+                check = false
+                break
+            end
+        end
+        if check
+            push!(unique_axes, i)
+        end
+    end
+    return size(unique_axes)[1]
+end
+
+function all_c2a(mol, sea)
+    out = []
+    len = size(sea.set)[1]
+    for i = 1:len-1, j = i+1:len
+        midpoint = normalize(mol[sea.set[i]].xyz + mol[sea.set[j]].xyz)
+        if midpoint == [0.0, 0.0, 0.0]
+            continue
+        else
+            c2 = Molecules.Cn(midpoint, 2)
+            molB = Molecules.transform(mol, c2)
+            check = Molecules.isequivalent(mol, molB)
+            if check
+                push!(out, midpoint)
+            else
+                continue
+            end
+        end
+    end
+    if size(out)[1] < 1
+        return nothing
+    end
+    return out
+end
+
+function all_c2b(mol, sea)
+    out = []
+    len = size(sea.set)[1]
+    for i = 1:len
+        c2_axis = normalize(mol[sea.set[i]].xyz)
+        c2 = Molecules.Cn(c2_axis, 2)
+        molB = Molecules.transform(mol, c2)
+        check = Molecules.isequivalent(mol, molB)
+        if check
+            push!(out, c2_axis)
+        else
+            continue
+        end
+    end
+    if size(out)[1] < 1
+        return nothing
+    end
+    return out
+end
+
+function issame_axis(a, b)
+    d = abs(a ⋅ b)
+    return isapprox(d, 1.0, rtol=1E-5)
+end
+
+function is_there_sigmav(mol, SEAs, paxis)
+    axes = []
+    for sea in SEAs
+        len = size(sea.set,1)
+        if len < 2
+            continue
+        end
+        A = sea.set[1]
+        for i = 2:len
+            B = sea.set[i]
+            n = normalize(mol[A].xyz - mol[B].xyz)
+            σ = Molecules.reflection_matrix(n)
+            molB = Molecules.transform(mol, σ)
+            check = Molecules.isequivalent(mol, molB)
+            if check
+                push!(axes, n)
+            else
+                continue
+            end
+        end
+    end
+    if size(axes,1) < 1
+        if mol_is_planar(mol)
+            return true
+        else
+            return false
+        end
+    end
+    unique_axes = [axes[1]]
+    for i in axes
+        check = true
+        for j in unique_axes
+            if issame_axis(i,j)
+                check = false
+                break
+            end
+            if check
+                push!(unique_axes, i)
+            end
+        end
+    end
+
+    for i in unique_axes
+        d = abs(i ⋅ paxis)
+        if isapprox(d, 1.0, atol=1E-5)
+            continue
+        else
+            return true
+        end
+    end
+    return false
+end
+
+function mol_is_planar(mol)
+    t = eltype(mol[1].xyz)
+    len = size(mol,1)
+    mat = zeros(Float64, (3,len))
+    for i = 1:len
+        mat[:,i] = mol[i].xyz
+    end
+    rank = LinearAlgebra.rank(mat)
+    if rank < 3
+        return true
+    end
+    return false
+end
