@@ -25,8 +25,9 @@ function Cn(v, n)
     return O
 end
 
-function σ(v)
+function σ(V)
     O = zeros(eltype(v), (3,3))
+    v = normalize(V)
     for i = 1:3, j = i:3
         if i == j
             O[i,i] = 1 - 2*v[i]^2

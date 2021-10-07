@@ -27,6 +27,9 @@ end
 # Alias for a vector of atoms
 Molecule = Vector{A} where A <: Atom
 
+# Tolerance for equivalence evaluations
+tol = 1E-5
+
 include("Parse.jl")
 include("Transformations.jl")
 #include("ZMAT.jl")

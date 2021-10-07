@@ -3,93 +3,96 @@ import Molecules: center_of_mass, translate
 
 
 function find_point_group(mol::Molecule)
+    # Center Molecule on COM
     mol = translate(mol, center_of_mass(mol))
+    # Calculate moment of inertia tensor (moit) eigenvalues
     Ia_mol, Ib_mol, Ic_mol = eigenmoit(calcmoit(mol))[1]
-    #println(Ia_mol, "   ", Ib_mol, "   ", Ic_mol)
+
     if Ia_mol == 0.0
+        # Linear Molecule
         if Molecules.isequivalent(Molecules.transform(mol, Molecules.inversion_matrix()), mol)
-            println("D∞h")
+            return("Dinfh")
         else
-            println("C∞h")
+            return("Cinfv")
         end
-    elseif isapprox(Ia_mol, Ib_mol, rtol=1E-5) && isapprox(Ia_mol, Ic_mol, rtol = 1E-5)
+    elseif isapprox(Ia_mol, Ib_mol, atol=tol) && isapprox(Ia_mol, Ic_mol, atol = tol)
+        # Molecule with high symmetry
         D = buildD(mol)
         SEAs = findSEA(D, 5)
-        println("High sym") # Keep going
         n = num_C2(mol, SEAs)
-        println(n)
         invertable = Molecules.isequivalent(Molecules.transform(mol, Molecules.inversion_matrix()), mol)
         if n == 15
-            println("Ih")
+            return("Ih")
         elseif n == 9
             if invertable
-                println("Oh")
+                return("Oh")
             else
-                println("O")
+                return("O")
             end
         elseif n == 3
             if invertable
-                println("Th")
+                return("Th")
             else
-                println("Td")
+                return("Td")
             end
-        else
-            println("ERROR!",n)
         end
     else
+        # Build distance matrix and find symmetry equivalent atoms
         D = buildD(mol)
         SEAs = findSEA(D, 5)
+        # Find sets of rotation elements
         rot_set = find_rotation_sets(mol, SEAs)
-
         if size(rot_set)[1] < 1
+            # Path followed if no rotation elements found by 'find_rotation_sets'
+            # Therefore, maximum rotation order of 2
             c2 = find_c2(mol, SEAs)
             if c2 !== nothing
                 c2_ortho = is_there_ortho_c2(mol, c2, SEAs)
                 σh = is_there_sigmah(mol, c2)
                 if c2_ortho
                     if σh
-                        println("D2h")
+                        return("D2h")
                     else
-                        println("D2") # Keep going
                         σv = is_there_sigmav(mol, SEAs, c2)
                         if σv
-                            println("D2d")
+                            return("D2d")
                         else
-                            println("D2")
+                            return("D2")
                         end
                     end
                 else
                     if σh
-                        println("C2h")
+                        return("C2h")
                     else
                         σv = is_there_sigmav(mol, SEAs, c2)
                         if σv
-                            println("C2v")
+                            return("C2v")
                         else
                             S4 = Molecules.Sn(c2, 4)
                             molB = Molecules.transform(mol, S4)
                             check = Molecules.isequivalent(mol, molB)
                             if check
-                                println("S4")
+                                return("S4")
                             else
-                                println("C2")
+                                return("C2")
                             end
                         end
                     end
                 end
             else
                 if Molecules.isequivalent(Molecules.transform(mol, Molecules.inversion_matrix()), mol)
-                    println("Ci")
+                    return("Ci")
                 else
                     σv = is_there_sigmav(mol, SEAs, [0.0,0.0,0.0])
                     if σv
-                        println("Cs")
+                        return("Cs")
                     else
-                        println("C1")
+                        return("C1")
                     end
                 end
             end
         else
+            # Path followed if rotation elements found by 'find_rotation_sets'
             rots = find_rotations(mol, rot_set)
             Cn = highest_ordered_axis(rots)
             paxis = rots[1].axis
@@ -98,28 +101,31 @@ function find_point_group(mol::Molecule)
             q3 = is_there_sigmav(mol, SEAs, paxis)
             if q1
                 if q2
-                    println("D",Cn,"h")
+                    return("D"*string(Cn)*"h")
                 else
                     if q3
-                        println("D",Cn,"d")
+                        return("D"*string(Cn)*"d")
                     else
-                        println("D",Cn)
+                        return("D"*string(Cn))
                     end
                 end
             else
                 if q2
-                    println("C",Cn,"h")
+                    return("C"*string(Cn)*"h")
                 else
                     if q3
-                        println("C",Cn,"v")
+                        return("C"*string(Cn)*"v")
+                        return("C",Cn,"v")
                     else
                         S2n = Molecules.Sn(paxis, Cn*2)
                         molB = Molecules.transform(mol, S2n)
                         check = Molecules.isequivalent(mol, molB)
                         if check
-                            println("S",Cn*2)
+                        return("S"*string(Cn*2))
+                            return("S",Cn*2)
                         else
-                            println("C",Cn)
+                        return("C"*string(Cn))
+                            return("C",Cn)
                         end
                     end
                 end
