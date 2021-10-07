@@ -2,7 +2,9 @@ using LinearAlgebra
 
 export calcmoit, eigenmoit
 
-function calcmoit(Atoms)
+function calcmoit(atoms)
+    # We center the atoms at their center of mass
+    Atoms = Molecules.translate(atoms, Molecules.center_of_mass(atoms))
     I = zeros(Float64, (3,3))
     len = size(Atoms)[1]
     for i = 1:3, j = 1:3
