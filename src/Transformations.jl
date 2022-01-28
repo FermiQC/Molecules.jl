@@ -37,9 +37,10 @@ end
 
 Returns a rotation matrix by θ about a rotation axis v
 """
-function rotation_matrix(v, θ::AbstractFloat)
+function rotation_matrix(V, θ::AbstractFloat)
     cosθ = cos(θ)
     sinθ = sin(θ)
+    v = normalize(V)
     a = [1,2,3]
     O = zeros(eltype(v), (3,3))
     O .+= 1 - cosθ
@@ -61,13 +62,19 @@ function rotation_matrix(v, θ::AbstractFloat)
     return O
 end
 
+function rotation_matrixd(v, θ::AbstractFloat)
+    r = deg2rad(θ)
+    return rotation_matrix(v, r)
+end
+
 """
     Molecules.reflection_matrix(v::Vector)
 
 Returns a reflection matrix through the plane with normal vector v
 """
-function reflection_matrix(v)
-    O = zeros(eltype(v), (3,3))
+function reflection_matrix(V)
+    O = zeros(eltype(V), (3,3))
+    v = normalize(V)
     for i = 1:3, j = i:3
         if i == j
             O[i,i] = 1 - 2*v[i]^2
@@ -116,9 +123,7 @@ Transforms xyz coordinates of each atom in A by some operation O
 """
 function transform!(atoms::Molecule, O::Array)
     for a in atoms
-        for i = 1:3
-            a.xyz[i] = sum(a.xyz[j]*O[i,j] for j = 1:3)
-        end
+        a.xyz .= O * a.xyz
     end
 end
 
@@ -143,10 +148,15 @@ Returns true or false
 function isequivalent(A::Molecule, B::Molecule)
     h = []
     len = size(A,1)
+    #println(A, "\n", B)
     for i = 1:len
         for j = 1:len
             if A[i].mass == B[j].mass
-                if isapprox(A[i].xyz, B[j].xyz, rtol=1E-5)
+                zs = broadcast(abs, A[i].xyz - B[j].xyz)
+                c =  isapprox(zs, [0.0,0.0,0.0], atol=tol)
+                #println(zs, " : ", c)
+                #if isapprox(broadcast(abs, A[i].xyz - B[j].xyz), [0.0,0.0,0.0], rtol=1E-5)
+                if c
                     push!(h, i)
                     break
                 end

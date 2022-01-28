@@ -7,7 +7,7 @@ using Formatting
 
 import PhysicalConstants.CODATA2018: a_0
 
-export Atom
+export Atom, Molecule
 
 bohr_to_angstrom = convert(Float64, a_0 / 1u"Å")
 
@@ -26,6 +26,9 @@ end
 
 # Alias for a vector of atoms
 Molecule = Vector{A} where A <: Atom
+
+# Tolerance for equivalence evaluations
+tol = 1E-5
 
 include("Parse.jl")
 include("Transformations.jl")

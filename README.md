@@ -11,11 +11,11 @@ Package for representation and manipulation of Atoms in Cartesian space and comp
 - [X] XYZ file parsing
 - [ ] XYZ ⇔ ZMAT conversion
 - [X] XYZ translation
-- [ ] XYZ rotation
+- [X] XYZ rotation
 - [X] Nuclear repulsion
 - [ ] Nuclear dipole
 - [X] Center of Mass
-- [ ] Principal inertial moments and axis
+- [X] Principal inertial moments and axis
 - [ ] Rotational constants
 - [ ] Rotational energy
-- [ ] Point group symmetry
+- [X] Point group symmetry
