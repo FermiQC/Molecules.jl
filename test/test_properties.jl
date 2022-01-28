@@ -10,4 +10,5 @@
 
     @test Molecules.center_of_mass(atoms) == [0.0, 0.0, 0.0]
     @test Molecules.nuclear_repulsion(atoms) ≈ 1.6816285798739845
+    @test Molecules.nuclear_dipole(atoms) == [-20.0, 0.0, 0.0]
 end
