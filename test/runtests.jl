@@ -7,4 +7,5 @@ using Test
     include("test_properties.jl")
     include("test_sym.jl")
     include("test_point_groups.jl")
+    include("test_character_tables.jl")
 end

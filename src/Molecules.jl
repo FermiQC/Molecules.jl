@@ -35,6 +35,6 @@ include("Transformations.jl")
 #include("ZMAT.jl")
 include("Properties.jl")
 # include("RotationalEnergy.jl")
-include("PointGroup/PointGroup.jl")
+include("Symmetry/Symmetry.jl")
 # include("Symmetry/Symmetry.jl")
 end # module
