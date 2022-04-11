@@ -1,5 +1,6 @@
 module CharacterTables
 import Base
+using LinearAlgebra
 using Molecules
 using Molecules:i,Cn,Sn,σ
 export Symel
