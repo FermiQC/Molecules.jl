@@ -11,10 +11,10 @@ export Atom, Molecule
 
 bohr_to_angstrom = convert(Float64, a_0 / 1u"Å")
 
-struct Atom{F}
+struct Atom
     Z
     mass
-    xyz::Vector{F}
+    xyz
 end
 
 # For checking if two atoms are the same
