@@ -1,27 +1,25 @@
 """
-    Molecules.function parse_file(file::String; unit=:angstrom, F=Float64, I=Int16)
+    Molecules.function parse_file(file::String; unit=:angstrom, F=Float64)
 
 Reads a xyz file and return a vector o `Atom` objects. Units can be indicated through the keyword argument `unit`.
-Coordinates and mass are stored as `F` (`Float64` by default) and atomic number is taken as `I` (`Int16` by default), 
-where `F` and `I` are keyword arguments.
+Coordinates are stored as `F` (`Float64` by default) where `F` is keyword arguments.
 
 See also: parse_string
 """
-function parse_file(file::String; unit=:angstrom, F=Float64, I=Int16)
+function parse_file(file::String; unit=:angstrom, F=Float64)
     molstring = read(file, String)
-    parse_string(molstring::String; unit=unit, F=F, I=I)
+    parse_string(molstring::String; unit=unit, F=F)
 end
 
 """
-    Molecules.function parse_string(molstring::String; unit=:angstrom, F=Float64, I=Int16)
+    Molecules.function parse_string(molstring::String; unit=:angstrom, F=Float64)
 
 Reads a String representing a XYZ file and return a vector o `Atom` objects. Units can be indicated through the keyword argument `unit`.
-Coordinates and mass are stored as `F` (`Float64` by default) and atomic number is taken as `I` (`Int16` by default), 
-where `F` and `I` are keyword arguments.
+Coordinates are stored as `F` (`Float64` by default) where `F` is keyword arguments.
 
 See also: parse_file
 """
-function parse_string(molstring::String; unit=:angstrom, F=Float64, I=Int16)
+function parse_string(molstring::String; unit=:angstrom, F=Float64)
 
     # Get a list of Atom objects from String
     if unit == :bohr
@@ -38,7 +36,7 @@ function parse_string(molstring::String; unit=:angstrom, F=Float64, I=Int16)
     # Match an atom id (String for atomic symbol or integer for atomic number) with one or more blank spaces on the left of it
     re_id = r"\s*(\d+|\w{1,2})"
 
-    atoms = Atom{I,F}[]
+    atoms = Atom{F}[]
 
     # Possible line formats
     # ID Mass X Y Z
@@ -74,7 +72,7 @@ function parse_string(molstring::String; unit=:angstrom, F=Float64, I=Int16)
             throw(ArgumentError("Failed to process data in line $line_num:\n $(line)"))
         end
 
-        Z = I(elements[id].number)
+        Z = elements[id].number
 
         # Convert String vector to Float vector
         xyz = zeros(F, 3)

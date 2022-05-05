@@ -11,9 +11,9 @@ export Atom, Molecule
 
 bohr_to_angstrom = convert(Float64, a_0 / 1u"Å")
 
-struct Atom{I,F}
-    Z::I
-    mass::F
+struct Atom{F}
+    Z
+    mass
     xyz::Vector{F}
 end
 

@@ -31,9 +31,9 @@
         Atom(1,  1.008, [-2.4882200570,     3.1553408443,     0.5120813130])
     ]
 
-    @test Molecules.parse_string(molstringA, I=Int64) == atoms
-    @test Molecules.parse_string(molstringB, I=Int64) == atoms
-    @test Molecules.parse_string(molstringC, I=Int64) == atoms
+    @test Molecules.parse_string(molstringA) == atoms
+    @test Molecules.parse_string(molstringB) == atoms
+    @test Molecules.parse_string(molstringC) == atoms
 
     atoms = [
         Atom(8, 15.999,  [1.2091536548,      1.7664118189,     -0.0171613972])
