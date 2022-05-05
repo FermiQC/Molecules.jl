@@ -146,6 +146,14 @@ Checks to see if two arrays of atoms are equivalent under permutation
 Returns true or false
 """
 function isequivalent(A::Molecule, B::Molecule)
+    len = size(A,1)
+    if size(atom_map(A,B), 1) == len
+        return true
+    end
+    return false
+end
+
+function atom_map(A::Molecule, B::Molecule)
     h = []
     len = size(A,1)
     #println(A, "\n", B)
@@ -157,11 +165,12 @@ function isequivalent(A::Molecule, B::Molecule)
                 #println(zs, " : ", c)
                 #if isapprox(broadcast(abs, A[i].xyz - B[j].xyz), [0.0,0.0,0.0], rtol=1E-5)
                 if c
-                    push!(h, i)
+                    push!(h, j)
                     break
                 end
             end
         end
     end
-    return size(h,1) == len
+    return h
 end
+

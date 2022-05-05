@@ -465,7 +465,6 @@ function is_there_sigmav(mol, SEAs, paxis)
         end
     end
     unique_axes = [axes[1]]
-    # This part is VERY inefficient!!!
     for i in axes
         check = true
         for j in unique_axes
@@ -473,9 +472,9 @@ function is_there_sigmav(mol, SEAs, paxis)
                 check = false
                 break
             end
-            if check
-                push!(unique_axes, i)
-            end
+        end
+        if check
+            push!(unique_axes, i)
         end
     end
     for i in unique_axes

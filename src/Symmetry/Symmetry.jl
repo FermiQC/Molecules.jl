@@ -1,4 +1,4 @@
-module PointGroup
+module Symmetry
 
 using Molecules
 
@@ -8,6 +8,7 @@ include("sea.jl")
 include("moit.jl")
 include("symmetry_finding.jl")
 include("flowchart.jl")
+include("CharacterTables/CharacterTables.jl")
 
 end
 
