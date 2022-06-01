@@ -1,5 +1,5 @@
 function generate_Cn(n)
-    symels = []
+    symels = Vector{Symel}([])
     axis = [0 0 1]'
     cn_r = Cn(axis, n)
     for i = 1:n-1
@@ -14,7 +14,7 @@ function generate_Sn(n)
 end
 
 function generate_Sn(n, S2n)
-    symels = []
+    symels = Vector{Symel}([])
     axis = [0 0 1]'
     σh = σ(axis)
     cn_r = Cn(axis, n)
@@ -36,7 +36,7 @@ function generate_Sn(n, S2n)
     for i = 1:n-1
         a, b = reduce(n, i)
         if b % 2 == 0
-            b += n
+            b += a
         end
         if a == 2
             continue
@@ -48,41 +48,55 @@ function generate_Sn(n, S2n)
 end
 
 function generate_σv(n)
-    symels = []
-    x_axis = [1 0 0]' # Orient C2 and σv along x-axis
-    rot_mat = Cn([0 0 1]', n)
+    symels = Vector{Symel}([])
+    x_axis = [1;0;0] # Orient C2 and σv along x-axis
+    z_axis = [0;0;1]
+    rot_mat = Cn(z_axis, n)
     for i = 1:n
-        axis = (rot_mat ^ i) * x_axis
+        axis = ((rot_mat ^ i) * x_axis)×z_axis
         push!(symels, Symel("sigmav_$(i % n + 1)", σ(axis)))
     end
     return symels
 end
 
 function generate_σd(n)
-    symels = []
-    x_axis = [1 0 0]' # Orient C2 and σv along x-axis
-    z_axis = [0 0 1]'
+    symels = Vector{Symel}([])
+    x_axis = [1;0;0] # Orient C2 and σv along x-axis
+    z_axis = [0;0;1]
     rot_mat = Cn(z_axis, 2*n)
     base_axis = Cn(z_axis, 4*n)*x_axis # Rotate x-axis by Cn/2 to produce an axis for σd's
     for i = 1:n
-        axis = (rot_mat ^ i) * base_axis
+        axis = ((rot_mat ^ i) * base_axis)×z_axis
         push!(symels, Symel("sigmad_$(i % n + 1)", σ(axis))) # Take moduli so that 360° rotated axis is 0
     end
     return symels
 end
 
-function generate_C2(n)
+function generate_C2p(n)
     if n % 2 == 0
-        nn = 2*n
+        nn = n >> 1
     else
         nn = n
     end
-    symels = []
-    x_axis = [1 0 0]' # Orient C2 and σv along x-axis
-    rot_mat = Cn([0 0 1]', n)
-    for i = 1:n
+    symels = Vector{Symel}([])
+    x_axis = [1,0,0] # Orient C2 and σv along x-axis
+    rot_mat = Cn([0,0,1], n)
+    for i = 0:nn-1
         axis = (rot_mat ^ i) * x_axis
-        push!(symels, Symel("C_2($(i % n + 1))", Cn(axis, 2)))
+        push!(symels, Symel("C_2'($(i+1))", Cn(axis, 2)))
+    end
+    return symels
+end
+
+function generate_C2pp(n)
+    nn = n >> 1
+    symels = Vector{Symel}([])
+    x_axis = [1,0,0]
+    rot_mat = Cn([0,0,1], n)
+    base_axis = Cn([0,0,1], 2*n) * x_axis
+    for i = 0:nn-1
+        axis = (rot_mat ^ i) * base_axis
+        push!(symels, Symel("C_2''($(i+1))", Cn(axis, 2)))
     end
     return symels
 end
@@ -93,7 +107,7 @@ function generate_T()
         the vectors for the rotation elements.
     """
     # Generate C3's
-    symels = []
+    symels = Vector{Symel}([])
     C3_1v = normalize!([1.0 1.0 1.0])
     C3_2v = normalize!([-1.0 1.0 -1.0])
     C3_3v = normalize!([-1.0 -1.0 1.0])
@@ -180,7 +194,7 @@ function generate_Th()
 end
 
 function generate_O()
-    symels = []
+    symels = Vector{Symel}([])
     # C4
     C4_xv = [1.0 0.0 0.0]
     C4_yv = [0.0 1.0 0.0]
@@ -271,7 +285,7 @@ function generate_Oh()
 end
 
 function generate_I()
-    symels = []
+    symels = Vector{Symel}([])
     faces, vertices, edgecenters = generate_I_vectors()
     
     # C5 (face vectors)
@@ -396,21 +410,21 @@ function distance(a,b)
     return (sum((a-b).^2))^0.5
 end
 
-function reduce(n, i)
-    g = gcd(n, i)
-    return div(n, g), div(i, g)
-end
-
-function gcd(A, B)
-    # A quick implementation of the Euclid algorithm for finding the greatest common divisor
-    a = max(A,B)
-    b = min(A,B)
-    if a == 0
-        return b
-    elseif b == 0
-        return a
-    else
-        r = a % b
-        gcd(b, r)
-    end
-end
+#function reduce(n, i)
+#    g = gcd(n, i)
+#    return div(n, g), div(i, g)
+#end
+#
+#function gcd(A, B)
+#    # A quick implementation of the Euclid algorithm for finding the greatest common divisor
+#    a = max(A,B)
+#    b = min(A,B)
+#    if a == 0
+#        return b
+#    elseif b == 0
+#        return a
+#    else
+#        r = a % b
+#        gcd(b, r)
+#    end
+#end

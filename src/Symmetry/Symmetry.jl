@@ -2,7 +2,7 @@ module Symmetry
 
 using Molecules
 
-tol = 1E-5
+tol = 1E-4
 
 include("sea.jl")
 include("moit.jl")

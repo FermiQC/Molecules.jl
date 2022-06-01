@@ -14,12 +14,11 @@ names = ["C1", "Ci", "Cs", "Cs_nonplanar", "C2", "C3", "S4", "C2v", "C3v", "C2h"
          "Cinfv", "Dinfh", "Th", "Td", "cube", "octahedron", "dodecahedron", "icosahedron"]
 pgs = ["C1", "Ci", "Cs", "Cs", "C2", "C3", "S4", "C2v", "C3v", "C2h", "C3h", "D2", "D3", "D2d", "D4d", "D3h", "D4h", "D5h", "D6h", "D12h", "D100h", 
        "Cinfv", "Dinfh", "Th", "Td", "Oh", "Oh", "Ih", "Ih"]
-
 @testset "Point Groups" begin
     for i = 1:size(names)[1]
         path = joinpath(@__DIR__, "sxyz/"*names[i]*".xyz")
         mol = Molecules.parse_file(path)
-        s = Molecules.Symmetry.find_point_group(mol)
-        @test s == pgs[i]
+        s = Molecules.Symmetry.find_point_group(mol)[1]
+        @test s == pgs[i] 
     end
 end
