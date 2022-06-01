@@ -64,3 +64,16 @@ function center_of_mass(atoms::Molecule)
     # Return center of mass
     return cm_xyz ./ M
 end
+
+
+"""
+    Molecules.nuclear_dipole(atoms::Molecule, o = (0.0, 0.0, 0.0))
+
+Returns the nuclear dipole moment
+"""
+function nuclear_dipole(atoms::Molecule, o = [0.0, 0.0, 0.0])
+
+    charges = [a.Z for a in atoms]
+    r = [a.xyz .- o for a in atoms]
+    return sum(r .* charges)
+end

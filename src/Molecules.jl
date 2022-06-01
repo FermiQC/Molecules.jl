@@ -11,10 +11,10 @@ export Atom, Molecule
 
 bohr_to_angstrom = convert(Float64, a_0 / 1u"Å")
 
-struct Atom{I,F}
-    Z::I
-    mass::F
-    xyz::Vector{F}
+struct Atom
+    Z
+    mass
+    xyz
 end
 
 # For checking if two atoms are the same
@@ -35,6 +35,6 @@ include("Transformations.jl")
 #include("ZMAT.jl")
 include("Properties.jl")
 # include("RotationalEnergy.jl")
-include("PointGroup/PointGroup.jl")
+include("Symmetry/Symmetry.jl")
 # include("Symmetry/Symmetry.jl")
 end # module

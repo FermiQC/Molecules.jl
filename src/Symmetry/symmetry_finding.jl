@@ -189,23 +189,31 @@ function is_there_ortho_c2(mol::Molecule, cn_axis::Vector{T}, SEAs) where T
     """
     len = size(mol)[1]
     for sea in SEAs
-        if c2a(mol, cn_axis, sea)
-            return true
-        elseif c2b(mol, cn_axis, sea)
-            return true
-        elseif sea.label == "Linear"
-            for sea2 in SEAs
-                if sea == sea2
-                    continue
-                elseif sea2.label == "Linear"
-                    if c2c(mol, cn_axis, sea, sea2)
-                        return true
+        c2b_chk = c2b(mol, cn_axis, sea)
+        if c2b_chk !== nothing
+            return true, c2b_chk
+            #return true
+        else c2a(mol, cn_axis, sea)
+            c2a_chk = c2a(mol, cn_axis, sea)
+            if c2a_chk !== nothing
+                return true, c2a_chk
+                #return true
+            elseif sea.label == "Linear"
+                for sea2 in SEAs
+                    if sea == sea2
+                        continue
+                    elseif sea2.label == "Linear"
+                        c2c_chk = c2c(mol, cn_axis, sea, sea2)
+                        if c2c_chk !== nothing
+                            return true, c2c_chk
+                            #return true
+                        end
                     end
                 end
-            end
-        end         
+            end         
+        end
     end
-    return false
+    return false, nothing
 end
 
 function num_C2(mol::Molecule, SEAs)
@@ -325,19 +333,21 @@ function c2a(mol, cn_axis, sea)
             molB = Molecules.transform(mol, c2)
             check = Molecules.isequivalent(mol, molB)
             if check
-                return true
+                #return true
+                return midpoint
             else
                 continue
             end
         end
     end
-    return false
+    return nothing
+    #return false
 end
 
 function c2b(mol, cn_axis, sea)
     len = size(sea.set)[1]
     for i = 1:len
-        c2_axis = mol[sea.set[i]].xyz
+        c2_axis = normalize(mol[sea.set[i]].xyz)
         if issame_axis(c2_axis, cn_axis)
             continue
         else
@@ -345,13 +355,15 @@ function c2b(mol, cn_axis, sea)
             molB = Molecules.transform(mol, c2)
             check = Molecules.isequivalent(mol, molB)
             if check
-                return true
+                #return true
+                return c2_axis
             else
                 continue
             end
         end
     end
-    return false
+    return nothing
+    #return false
 end
 
 function c2c(mol, cn_axis, sea1, sea2)
@@ -359,11 +371,15 @@ function c2c(mol, cn_axis, sea1, sea2)
     rkl = mol[sea2.set[1]].xyz - mol[sea2.set[2]].xyz
     c2_axis = cross(rij, rkl)
     if issame_axis(c2_axis, cn_axis)
-        return false
+        return nothing
+        #return false
     else
         c2 = Molecules.Cn(c2_axis, 2)
         molB = Molecules.transform(mol, c2)
-        return Molecules.isequivalent(mol, molB)
+        if Molecules.isequivalent(mol, molB)
+            return c2_axis
+        end
+        #return Molecules.isequivalent(mol, molB)
     end
 end
 
@@ -435,6 +451,8 @@ function is_there_sigmav(mol, SEAs, paxis)
     """
     Checks for the presence of reflection planes that
     contain the principal c2_axis
+
+    Returns true/false and normal vector to a symmetry plane/nothing.
     """
     axes = []
     for sea in SEAs
@@ -459,9 +477,9 @@ function is_there_sigmav(mol, SEAs, paxis)
     end
     if size(axes,1) < 1
         if mol_is_planar(mol)
-            return true
+            return true, planar_mol_axis(mol)
         else
-            return false
+            return false, nothing
         end
     end
     unique_axes = [axes[1]]
@@ -481,10 +499,10 @@ function is_there_sigmav(mol, SEAs, paxis)
         if issame_axis(i, paxis)
             continue
         else
-            return true
+            return true, i
         end
     end
-    return false
+    return false, nothing
 end
 
 function mol_is_planar(mol)
@@ -502,4 +520,21 @@ function mol_is_planar(mol)
         return true
     end
     return false
+end
+
+function planar_mol_axis(mol)
+    "Finds normal vector of molecule plane, 
+    assuming molecule is planar as checked by mol_is_planar"
+    len = size(mol,1)
+    for i = 1:len
+        for j = i:len
+            a = normalize(mol[i].xyz)
+            b = normalize(mol[j].xyz)
+            chk = dot(a, b)
+            if !isapprox(chk, 1.0, atol=tol)
+                return normalize!(cross(a,b))
+            end
+        end
+    end
+    return nothing
 end

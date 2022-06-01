@@ -7,13 +7,14 @@ function find_point_group(mol::Molecule)
     mol = translate(mol, center_of_mass(mol))
     # Calculate moment of inertia tensor (moit) eigenvalues
     Ia_mol, Ib_mol, Ic_mol = eigenmoit(calcmoit(mol))[1]
-
+    paxis = [0;0;0]
+    saxis = [0;0;0]
     if Ia_mol == 0.0
         # Linear Molecule
         if Molecules.isequivalent(Molecules.transform(mol, Molecules.inversion_matrix()), mol)
-            return("Dinfh")
+            pg = "Dinfh"
         else
-            return("Cinfv")
+            pg = "Cinfv"
         end
     elseif isapprox(Ia_mol, Ib_mol, atol=tol) && isapprox(Ia_mol, Ic_mol, atol = tol)
         # Molecule with high symmetry
@@ -22,18 +23,18 @@ function find_point_group(mol::Molecule)
         n = num_C2(mol, SEAs)
         invertable = Molecules.isequivalent(Molecules.transform(mol, Molecules.inversion_matrix()), mol)
         if n == 15
-            return("Ih")
+            pg = "Ih"
         elseif n == 9
             if invertable
-                return("Oh")
+                pg = "Oh"
             else
-                return("O")
+                pg = "O"
             end
         elseif n == 3
             if invertable
-                return("Th")
+                pg = "Th"
             else
-                return("Td")
+                pg = "Td"
             end
         end
     else
@@ -47,47 +48,55 @@ function find_point_group(mol::Molecule)
             # Therefore, maximum rotation order of 2
             c2 = find_c2(mol, SEAs)
             if c2 !== nothing
-                c2_ortho = is_there_ortho_c2(mol, c2, SEAs)
+                paxis = c2
+                c2_ortho_chk, c2_ortho = is_there_ortho_c2(mol, c2, SEAs)
                 σh = is_there_sigmah(mol, c2)
-                if c2_ortho
+                if c2_ortho_chk
+                    saxis = c2_ortho
                     if σh
-                        return("D2h")
+                        pg = "D2h"
                     else
-                        σv = is_there_sigmav(mol, SEAs, c2)
-                        if σv
-                            return("D2d")
+                        σv_chk, σv = is_there_sigmav(mol, SEAs, c2)
+                        if σv_chk
+                            pg = "D2d"
                         else
-                            return("D2")
+                            pg = "D2"
                         end
                     end
                 else
                     if σh
-                        return("C2h")
+                        pg = "C2h"
                     else
-                        σv = is_there_sigmav(mol, SEAs, c2)
-                        if σv
-                            return("C2v")
+                        σv_chk, σv = is_there_sigmav(mol, SEAs, c2)
+                        if σv_chk
+                            if σv !== nothing
+                                saxis = normalize(σv)#normalize(cross(paxis,σv))
+                            end
+                            pg = "C2v"
                         else
                             S4 = Molecules.Sn(c2, 4)
                             molB = Molecules.transform(mol, S4)
                             check = Molecules.isequivalent(mol, molB)
                             if check
-                                return("S4")
+                                pg = "S4"
                             else
-                                return("C2")
+                                pg = "C2"
                             end
                         end
                     end
                 end
             else
                 if Molecules.isequivalent(Molecules.transform(mol, Molecules.inversion_matrix()), mol)
-                    return("Ci")
+                    pg = "Ci"
                 else
-                    σv = is_there_sigmav(mol, SEAs, [0.0,0.0,0.0])
-                    if σv
-                        return("Cs")
+                    σv_chk, σv = is_there_sigmav(mol, SEAs, [0.0,0.0,0.0])
+                    if σv_chk
+                        if σv !== nothing
+                            paxis = σv
+                        end
+                        pg = "Cs"
                     else
-                        return("C1")
+                        pg = "C1"
                     end
                 end
             end
@@ -96,40 +105,42 @@ function find_point_group(mol::Molecule)
             rots = find_rotations(mol, rot_set)
             Cn = highest_ordered_axis(rots)
             paxis = rots[1].axis
-            q1 = is_there_ortho_c2(mol, paxis, SEAs)
+            q1, c2_ortho = is_there_ortho_c2(mol, paxis, SEAs)
             q2 = is_there_sigmah(mol, paxis)
-            q3 = is_there_sigmav(mol, SEAs, paxis)
+            q3, sigmav = is_there_sigmav(mol, SEAs, paxis)
             if q1
+                saxis = c2_ortho
                 if q2
-                    return("D"*string(Cn)*"h")
+                    pg = "D"*string(Cn)*"h"
                 else
                     if q3
-                        return("D"*string(Cn)*"d")
+                        pg = "D"*string(Cn)*"d"
                     else
-                        return("D"*string(Cn))
+                        pg = "D"*string(Cn)
                     end
                 end
             else
                 if q2
-                    return("C"*string(Cn)*"h")
+                    pg = "C"*string(Cn)*"h"
                 else
                     if q3
-                        return("C"*string(Cn)*"v")
-                        return("C",Cn,"v")
+                        if sigmav !== nothing
+                            saxis = normalize(cross(paxis, sigmav))
+                        end
+                        pg = "C"*string(Cn)*"v"
                     else
                         S2n = Molecules.Sn(paxis, Cn*2)
                         molB = Molecules.transform(mol, S2n)
                         check = Molecules.isequivalent(mol, molB)
                         if check
-                        return("S"*string(Cn*2))
-                            return("S",Cn*2)
+                            pg = "S"*string(Cn*2)
                         else
-                        return("C"*string(Cn))
-                            return("C",Cn)
+                            pg = "C"*string(Cn)
                         end
                     end
                 end
             end
         end
     end
+    return pg, paxis, saxis
 end
