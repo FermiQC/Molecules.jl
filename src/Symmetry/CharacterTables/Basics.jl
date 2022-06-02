@@ -7,7 +7,16 @@ struct Chartable
     name
     irreps
     classes
+    class_orders
     characters
+end
+
+struct SymText
+    pg
+    symels
+    ctab
+    class_map
+    atom_map
 end
 
 struct PG
