@@ -19,6 +19,6 @@ pgs = ["C1", "Ci", "Cs", "Cs", "C2", "C3", "S4", "C2v", "C3v", "C2h", "C3h", "D2
         path = joinpath(@__DIR__, "sxyz/"*names[i]*".xyz")
         mol = Molecules.parse_file(path)
         s = Molecules.Symmetry.find_point_group(mol)[1]
-        @test s == pgs[i] 
+        @test s == pgs[i]
     end
 end

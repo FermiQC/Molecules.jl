@@ -52,7 +52,7 @@ function pg_to_symels(PG)
             sns = generate_Sn(pg.n)
             σvs = generate_σv(n)
             #c2s = generate_C2(pg.n)
-            symels = vcat(symels, cns, sns, σvs, σds, c2s)
+            symels = vcat(symels, cns, c2s, sns, σvs, σds)
         elseif pg.subfamily == "d"
             if pg.n % 2 == 0
                 c2ps = generate_C2p(pg.n)
@@ -65,7 +65,7 @@ function pg_to_symels(PG)
             cns = generate_Cn(pg.n)
             sns = generate_Sn(pg.n * 2, true)
             σds = generate_σd(pg.n)
-            symels = vcat(symels, cns, sns, σds, c2s)
+            symels = vcat(symels, cns, sns, c2s, σds)
         elseif isnothing(pg.subfamily)
             cns = generate_Cn(pg.n)
             if pg.n % 2 == 0
@@ -240,15 +240,32 @@ function pg_to_chartab(PG)
             throw(ArgumentError("Unrecognized Point Group"))
         end
     end
-    return Chartable(PG, irreps, classes, chars)
+    class_orders = grab_class_orders(classes)
+    return Chartable(PG, irreps, classes, class_orders, chars)
+end
+
+function grab_class_orders(classes)
+    ncls = length(classes)
+    class_orders = zeros(Int64, ncls)
+    for i = 1:ncls
+        class_orders[i] = grab_order(classes[i])
+    end
+    return class_orders
+end
+
+function grab_order(class_str)
+    re = r"^(\d+)"
+    m = match(re, class_str)
+    if !isnothing(m)
+        return parse(Int64, m.captures[1])
+    else
+        return 1
+    end
 end
 
 function generate_symel_to_class_map(symels::Vector{Symel}, ctab::Chartable)
     pg = parse_pg_str(ctab.name)
-    display(ctab)
-    for s in symels
-        println(s.symbol, "  ", s.rrep)
-    end
+    ns = pg.n>>1 # pg.n floor divided by 2
     ncls = length(ctab.classes)
     nsymel = length(symels)
     class_map = zeros(Int64, nsymel)
@@ -258,12 +275,12 @@ function generate_symel_to_class_map(symels::Vector{Symel}, ctab::Chartable)
             if pg.n % 2 == 0
                 class_map[4:pg.n+2] .= 2:pg.n # C_n
                 class_map[3] = pg.n+1 # i
-                class_map[2] = pg.n+(pg.n>>1)+1 # σh
+                class_map[2] = pg.n+ns+1 # σh
                 for i = pg.n+3:2*pg.n # S_n
-                    if i > 3*(pg.n>>1)+1
-                        class_map[i] = i - (pg.n>>1)
+                    if i > 3*ns+1
+                        class_map[i] = i-ns
                     else
-                        class_map[i] = i + (pg.n>>1)-1
+                        class_map[i] = i+ns-1
                     end
                 end
             else
@@ -277,10 +294,10 @@ function generate_symel_to_class_map(symels::Vector{Symel}, ctab::Chartable)
             end
         elseif pg.subfamily == "v"
             # The last class is σv (and then σd if n is even), and the last symels are also these!
-            cn_class_map!(class_map, pg.n, 0)
+            cn_class_map!(class_map, pg.n, 0, 0)
             if pg.n % 2 == 0
-                class_map[end-pg.n+1:end-(pg.n>>1)] .= ncls-1
-                class_map[end-(pg.n>>1)+1:end] .= ncls
+                class_map[end-pg.n+1:end-ns] .= ncls-1
+                class_map[end-ns+1:end] .= ncls
             else
                 class_map[end-pg.n+1:end] .= ncls
             end
@@ -290,48 +307,94 @@ function generate_symel_to_class_map(symels::Vector{Symel}, ctab::Chartable)
     elseif pg.family == "S"
         if pg.n % 4 == 0
             for i = 2:pg.n
-                if i <= pg.n>>1
+                if i <= ns
                     class_map[i] = 2*i-1
                 else
-                    class_map[i] = 2*(i-pg.n>>1)
+                    class_map[i] = 2*(i-ns)
                 end
             end
         else
-            class_map[2] = (pg.n>>1)+1 # i
-            class_map[3:(pg.n>>1)+1] .= 2:pg.n>>1 # C_n
-            for i = (pg.n>>1)+2:pg.n # S_n
-                println(i)
-                if i > (pg.n>>1)+(pg.n>>2)+1
-                    class_map[i] = i-((pg.n>>1)-1)>>1
+            class_map[2] = ns+1 # i
+            class_map[3:ns+1] .= 2:ns # C_n
+            for i = ns+2:pg.n # S_n
+                if i > ns+(pg.n>>2)+1
+                    class_map[i] = i-(ns-1)>>1
                 else
-                    class_map[i] = i + ((pg.n>>1)-1)>>1
+                    class_map[i] = i + (ns-1)>>1
                 end
             end
         end
     elseif pg.family == "D"
         if pg.subfamily == "h"
             if pg.n % 2 == 0
-                class_map[2] = ncls-2
-                class_map[3] = (ncls>>1)+1
-                cn_class_map!(class_map, pg.n, 2)
+                class_map[2] = ncls-2 # σh
+                class_map[3] = (ncls>>1)+1 # i
+                cn_class_map!(class_map, pg.n, 2, 0) # Cn
+                class_map[pg.n+3:3*ns+2] .= ns+2 # C2'
+                class_map[3*ns+3:2*pg.n+2] .= ns+3 # C2''
+                for i = 2*pg.n+3:3*pg.n+1 # Sn
+                    if i > 3*pg.n-ns+1
+                        class_map[i] = i-2*pg.n+3
+                    else
+                        class_map[i] = 3*pg.n+6-i
+                    end
+                end
+                # The result of C2'×i changes depending if pg.n ≡ 0 (mod 4)
+                if pg.n % 4 == 0
+                    class_map[end-pg.n+1:end-ns] .= ncls-1 # σv
+                    class_map[end-ns+1:end] .= ncls # σd
+                else
+                    class_map[end-pg.n+1:end-ns] .= ncls # σv
+                    class_map[end-ns+1:end] .= ncls-1 # σd
+                end
             else
                 class_map[2] = (ncls>>1)+1
-                cn_class_map!(class_map, pg.n, 1)
+                cn_class_map!(class_map, pg.n, 1, 0)
+                class_map[pg.n+2:2*pg.n+1] .= ns+2
+                cn_class_map!(class_map, pg.n, 2*pg.n, ns+2)
+                class_map[end-pg.n+1:end] .= ncls
             end
         elseif pg.subfamily == "d"
+            if pg.n % 2 == 0
+                cn_class_map!(class_map, pg.n, 0, 0) # Cn
+                class_map[2:pg.n] .= 2*class_map[2:pg.n].-1 # Reposition Cn
+                cn_class_map!(class_map, pg.n+1, pg.n-1, 0) # Sn
+                class_map[pg.n+1:2*pg.n] .= 2*(class_map[pg.n+1:2*pg.n].-1) # Reposition Sn
+                class_map[end-2*pg.n+1:end-pg.n] .= ncls-1 # C2'
+                class_map[end-pg.n+1:end] .= ncls # σd
+            else
+                class_map[2] = (ncls>>1)+1 # i
+                cn_class_map!(class_map, pg.n, 1, 0) # Cn
+                for i = pg.n+2:2*pg.n # Sn
+                    if i > pg.n+1+ns
+                        class_map[i] = i+2-pg.n
+                    else
+                        class_map[i] = 2*pg.n+4-i
+                    end
+                end
+                class_map[end-2*pg.n+1:end-pg.n] .= ns+2
+                class_map[end-pg.n+1:end] .= ncls # σd
+            end
         else
+            cn_class_map!(class_map, pg.n, 0, 0) # Cn
+            if pg.n % 2 == 0
+                class_map[end-pg.n+1:end-ns] .= ncls-1 # Cn'
+                class_map[end-ns+1:end] .= ncls # Cn''
+            else
+                class_map[end-pg.n+1:end] .= ncls # Cn
+            end
         end
     else
     end
     return class_map
 end
 
-function cn_class_map!(class_map, n, offset)
+function cn_class_map!(class_map, n, idx_offset, cls_offset)
     for i = 2:n
         if i > (n>>1)+1
-            class_map[i+offset] = n-i+2
+            class_map[i+idx_offset] = n-i+2+cls_offset
         else
-            class_map[i+offset] = i
+            class_map[i+idx_offset] = i+cls_offset
         end
     end
 end
@@ -432,16 +495,29 @@ function do_things(fn)
     symels = pg_to_symels(pg)
     symels = rotate_symels_to_mol(symels, paxis, saxis)
     ctab = pg_to_chartab(pg)
-    class_map = generate_symel_to_class_map(symels, ctab)
-    println(class_map)
-    #amap = get_atom_mapping(mol, symels)
-    #println(amap)
+    #class_map = generate_symel_to_class_map(symels, ctab)
+    #println(class_map)
+    amap = get_atom_mapping(mol, symels)
+    println(amap)
     #salcs = get_salcs(mol, symels, ctab)
 end
 
 function do_things2(pg)
     symels = pg_to_symels(pg)
     ctab = pg_to_chartab(pg)
+    println(ctab.class_orders)
     class_map = generate_symel_to_class_map(symels, ctab)
     println(class_map)
+end
+
+function symtext_from_file(fn)
+    mol = Molecules.parse_file(fn)
+    mol = Molecules.translate(mol, Molecules.center_of_mass(mol))
+    pg, paxis, saxis = Molecules.Symmetry.find_point_group(mol)
+    symels = pg_to_symels(pg)
+    symels = rotate_symels_to_mol(symels, paxis, saxis)
+    ctab = pg_to_chartab(pg)
+    class_map = generate_symel_to_class_map(symels, ctab)
+    atom_map = get_atom_mapping(mol, symels)
+    return SymText(pg, symels, ctab, class_map, atom_map)
 end
