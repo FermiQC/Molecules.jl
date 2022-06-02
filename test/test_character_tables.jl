@@ -13,7 +13,7 @@ include("pgs/Dn.jl")
 include("pgs/Dnd.jl")
 include("pgs/Dnh.jl")
 include("pgs/Cubic.jl")
-test_cubic = true
+test_cubic = false
 allofem = ["C1", "C2",  "C3",  "C4",  "C5",  "C6",
                  "C2v", "C3v", "C4v", "C5v", "C6v",
                  "C2h", "C3h", "C4h", "C5h", "C6h",
