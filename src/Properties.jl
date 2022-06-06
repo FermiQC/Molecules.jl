@@ -45,7 +45,7 @@ function ∇nuclear_repulsion(atoms::Molecule, i)
         E -= (B.Z / D^3) .* (A.xyz - B.xyz)/bohr_to_angstrom
     end
 
-    return A.Z .* E ./ bohr_to_angstrom
+    return A.Z .* E 
 end
 
 """
