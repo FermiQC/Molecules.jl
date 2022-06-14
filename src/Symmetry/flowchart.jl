@@ -2,7 +2,7 @@ export find_point_group
 import Molecules: center_of_mass, translate
 
 
-function find_point_group(mol::Molecule)
+function find_point_group(mol::Vector{Atom})
     # Center Molecule on COM
     mol = translate(mol, center_of_mass(mol))
     # Calculate moment of inertia tensor (moit) eigenvalues

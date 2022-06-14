@@ -1,5 +1,5 @@
 """
-    Molecules.function parse_file(file::String; unit=:angstrom, F=Float64)
+    Molecules.function parse_file(file::String; unit=:angstrom)
 
 Reads a xyz file and return a vector o `Atom` objects. Units can be indicated through the keyword argument `unit`.
 
@@ -11,7 +11,7 @@ function parse_file(file::String; unit=:angstrom)
 end
 
 """
-    Molecules.function parse_string(molstring::String; unit=:angstrom, F=Float64)
+    Molecules.function parse_string(molstring::String; unit=:angstrom)
 
 Reads a String representing a XYZ file and return a vector o `Atom` objects. Units can be indicated through the keyword argument `unit`.
 
@@ -88,14 +88,15 @@ function parse_string(molstring::String; unit=:angstrom)
 end
 
 """
-    get_xyz(M::Molecule)
+    get_xyz(M::Vector{A}) where A <: Atom
 
-Returns a XYZ string in angstrom for the given Molecule.
+Returns a XYZ string in angstrom for the list of atoms
 """
-function get_xyz(M::Molecule)
+get_xyz(M::Molecule) = get_xyz(M.atoms)
+function get_xyz(M::Vector{A}) where A <: Atom
     molstring = ""
-    for A in M
-        molstring *= format("{}   {: 15.12f}   {: 15.12f}   {: 15.12f}\n", Molecules.symbol(A), A.xyz...)
+    for atom in M
+        molstring *= format("{}   {: 15.12f}   {: 15.12f}   {: 15.12f}\n", Molecules.symbol(atom), atom.xyz...)
     end
     return molstring
 end
