@@ -36,7 +36,7 @@ nuclear_repulsion(M::Molecule) = nuclear_repulsion(M.atoms)
 """
     Molecules.∇nuclear_repulsion(atoms::Vector{Atom}, i) where A <: Atom
 
-Returns the derivative of the nuclear repulsion w.r.t the center i.
+Returns the derivative of the nuclear repulsion w.r.t the center i. Units Eₕ/Å
 """ 
 function ∇nuclear_repulsion(atoms::Vector{Atom}, i)
     E = zeros(3)
@@ -45,9 +45,9 @@ function ∇nuclear_repulsion(atoms::Vector{Atom}, i)
     for B in atoms
         B == At ? continue : nothing
 
-        D = √((At.xyz.-B.xyz)⋅(At.xyz.-B.xyz)) * angstrom_to_bor
+        D = √((At.xyz.-B.xyz)⋅(At.xyz.-B.xyz)) * angstrom_to_bohr
 
-        E -= (B.Z / D^3) .* (At.xyz - B.xyz) * angstrom_to_bor
+        E -= (B.Z / D^3) .* (At.xyz - B.xyz) * angstrom_to_bohr
     end
 
     return At.Z .* E 

@@ -14,7 +14,7 @@ const tol = 1E-5
 
 # Conversion factor 
 const bohr_to_angstrom = convert(Float64, a_0 / 1u"Å")
-const angstrom_to_bor = 1.0/bohr_to_angstrom
+const angstrom_to_bohr = 1.0/bohr_to_angstrom
 
 struct Atom
     Z
@@ -33,8 +33,16 @@ end
 # Default charge = 0
 Molecule(atoms::Vector{T}) where T <: Atom = Molecule(atoms, 0) 
 # Default multiplicity = singlet or doublet 
-Molecule(atoms::Vector{T}, charge::Int) where T <: Atom = Molecule(atoms, charge, (charge % 2) + 1)
+function Molecule(atoms::Vector{T}, charge::Int) where T <: Atom 
+    # Compute number of electrons
+    nelec = sum(a.Z for a in atoms) - charge
+    Molecule(atoms, charge, (nelec % 2) + 1)
+end
 function Molecule(atoms::Vector{T}, charge::Int, multiplicity::Int) where T <: Atom
+
+    if multiplicity < 1
+        throw(DomainError("multiplicity input ($multiplicity)", "Multiplicity value cannot be less than one"))
+    end
 
     # Compute number of electrons
     nelec = -charge
@@ -44,7 +52,7 @@ function Molecule(atoms::Vector{T}, charge::Int, multiplicity::Int) where T <: A
 
     # If the number of electrons turns out negative returns an error
     if nelec ≤ 0
-        throw(DomainError("number of electrons", "Invalid charge ($charge) for given molecule"))
+        throw(DomainError("negative number of electrons", "Invalid charge ($charge) for given molecule."))
     end
 
     # Mult = 2Ms + 1 thus the number of unpaired electrons (taken as α) is Mult-1 = 2Ms
@@ -53,7 +61,7 @@ function Molecule(atoms::Vector{T}, charge::Int, multiplicity::Int) where T <: A
     # The number of β electrons must be equal the number of doubly occupied orbitals (Ndo)
     # Ndo = (nelec - n_of_unpaired_elec)/2 this must be an integer
     if isodd(nelec - αexcess)
-        throw(DomainError("number of electrons", "Invalid charge ($charge) for given molecule"))
+        throw(DomainError("charge and multiplicity", "Invalid charge ($charge) and multiplicity ($multiplicity) combination."))
     end
 
     Nβ = (nelec - αexcess) ÷ 2
