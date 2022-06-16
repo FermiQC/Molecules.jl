@@ -1,9 +1,9 @@
 """
-    Molecules.translate!(atoms::Molecule, r::Vector{T})
+    Molecules.translate!(atoms::Vector{Atom}, r::Vector{T})
 
 Translate atoms into position r.
 """
-function translate!(atoms::Molecule, r::Vector{T}) where T
+function translate!(atoms::Vector{Atom}, r::Vector{T}) where T
     for a in atoms
         for i = 1:3
             a.xyz[i] -= r[i]
@@ -12,11 +12,11 @@ function translate!(atoms::Molecule, r::Vector{T}) where T
 end
 
 """
-    Molecules.translate(atoms::Molecule)
+    Molecules.translate(atoms::Vector{Atom})
 
 Return a copy of atoms translated into position r.
 """
-function translate(atoms::Molecule, r::Vector{T}) where T
+function translate(atoms::Vector{Atom}, r::Vector{T}) where T
     newatoms = deepcopy(atoms)
     translate!(newatoms, r)
     return newatoms
@@ -117,45 +117,45 @@ function i()
 end
     
 """
-    Molecules.transform!(A::Molecule, O::Array)
+    Molecules.transform!(A::Vector{Atom}, O::Array)
 
 Transforms xyz coordinates of each atom in A by some operation O
 """
-function transform!(atoms::Molecule, O::Array)
+function transform!(atoms::Vector{Atom}, O::Array)
     for a in atoms
         a.xyz .= O * a.xyz
     end
 end
 
 """
-    Molecules.transform(A::Molecule, O::Array)
+    Molecules.transform(A::Vector{Atom}, O::Array)
 
 Transforms xyz coordinates of each atom in A by some operation O
 Returns new list of atoms with transformed xyz coordinates
 """
-function transform(atoms::Molecule, O::Array)
+function transform(atoms::Vector{Atom}, O::Array)
     newatoms = deepcopy(atoms)
     transform!(newatoms, O)
     return newatoms
 end
 
 """
-    Molecules.issame(A::Molecule, B::Molecule)
+    Molecules.issame(A::Vector{Atom}, B::Vector{Atom})
 
 Checks to see if two arrays of atoms are equivalent under permutation
 Returns true or false
 """
-function isequivalent(A::Molecule, B::Molecule)
-    len = size(A,1)
+function isequivalent(A::Vector{Atom}, B::Vector{Atom})
+    len = length(A)
     if size(atom_map(A,B), 1) == len
         return true
     end
     return false
 end
 
-function atom_map(A::Molecule, B::Molecule)
+function atom_map(A::Vector{Atom}, B::Vector{Atom})
     h = []
-    len = size(A,1)
+    len = length(A)
     #println(A, "\n", B)
     for i = 1:len
         for j = 1:len
