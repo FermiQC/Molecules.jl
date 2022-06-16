@@ -25,9 +25,11 @@
       </a>
     </td>
   </tr>
-</table>
+</table> 
 
-This package offers creating and manipulation of atomic ensamble for molecular simulations. 
+# About 
+
+This package offers tools to create and manipulate atomic ensamble for molecular simulations.
 
 - Parsing XYZ data
 - Manipulation of atomic/geometric structure
