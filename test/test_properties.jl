@@ -19,13 +19,16 @@
     h = 1e-8
     ap = deepcopy(atoms)
     am = deepcopy(atoms)
+    r = [SVector(-h,0.0,0.0), SVector(0.0,-h,0.0), SVector(0.0,0.0,-h)]
     for i = 1:length(atoms)
         for k = 1:3 
-            ap[i].xyz[k] += h 
-            am[i].xyz[k] -= h 
+            # Translate XYZ coordinates
+            ap[i] = Molecules.translate(ap[i], r[k]) 
+            am[i] = Molecules.translate(am[i], -r[k]) 
             findif[k] = (Molecules.nuclear_repulsion(ap) - Molecules.nuclear_repulsion(am)) / (2h)
-            ap[i].xyz[k] -= h 
-            am[i].xyz[k] += h 
+            # Reverse transformation
+            ap[i] = Molecules.translate(ap[i], -r[k]) 
+            am[i] = Molecules.translate(am[i], r[k]) 
         end
         s =  sum((findif .- Molecules.∇nuclear_repulsion(mol, i) * Molecules.angstrom_to_bohr).^2)
         @test √(s/3) < 1e-7

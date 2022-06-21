@@ -1,5 +1,6 @@
 using Molecules
 using Test
+using StaticArrays
 
 @testset "Molecules" begin
     include("test_parsing.jl")

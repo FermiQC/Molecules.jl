@@ -4,6 +4,7 @@ using Unitful
 using PeriodicTable
 using LinearAlgebra
 using Formatting
+using StaticArrays
 
 import PhysicalConstants.CODATA2018: a_0
 
@@ -16,29 +17,32 @@ const tol = 1E-5
 const bohr_to_angstrom = convert(Float64, a_0 / 1u"Å")
 const angstrom_to_bohr = 1.0/bohr_to_angstrom
 
-struct Atom
-    Z
-    mass
-    xyz
+struct Atom{T<:Real, X<:Real}
+    Z::Int
+    mass::T
+    xyz::SVector{3, X}
 end
 
-struct Molecule
-    atoms::Vector{Atom}
+struct Molecule{A<:Atom}
+    atoms::Vector{A}
     charge::Int
     multiplicity::Int
     Nα::Int
     Nβ::Int
 end
 
+# Create Atom using regular array
+Atom(Z, mass, xyz::Array{<:Real, 1}) = Atom(Z, mass, SVector{3}(xyz))
+
 # Default charge = 0
-Molecule(atoms::Vector{T}) where T <: Atom = Molecule(atoms, 0) 
+Molecule(atoms::Vector{A}) where A <: Atom = Molecule(atoms, 0) 
 # Default multiplicity = singlet or doublet 
-function Molecule(atoms::Vector{T}, charge::Int) where T <: Atom 
+function Molecule(atoms::Vector{A}, charge::Int) where A <: Atom 
     # Compute number of electrons
     nelec = sum(a.Z for a in atoms) - charge
     Molecule(atoms, charge, (nelec % 2) + 1)
 end
-function Molecule(atoms::Vector{T}, charge::Int, multiplicity::Int) where T <: Atom
+function Molecule(atoms::Vector{A}, charge::Int, multiplicity::Int) where A <: Atom
 
     if multiplicity < 1
         throw(DomainError("multiplicity input ($multiplicity)", "Multiplicity value cannot be less than one"))

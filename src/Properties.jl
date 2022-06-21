@@ -17,11 +17,11 @@ function nuclear_repulsion(A::Atom, B::Atom)
 end
 
 """
-    Molecules.nuclear_repulsion(atoms::Vector{Atom}) where A <: Atom
+    Molecules.nuclear_repulsion(atoms::Vector{<:Atom}) where A <: Atom
 
 Returns the total nuclear respulsion energy of a group of atoms. 
 """ 
-function nuclear_repulsion(atoms::Vector{Atom})
+function nuclear_repulsion(atoms::Vector{<:Atom})
     N = length(atoms)
     E = 0.0
     for i in 1:N
@@ -34,11 +34,11 @@ end
 nuclear_repulsion(M::Molecule) = nuclear_repulsion(M.atoms)
 
 """
-    Molecules.∇nuclear_repulsion(atoms::Vector{Atom}, i) where A <: Atom
+    Molecules.∇nuclear_repulsion(atoms::Vector{<:Atom}, i) where A <: Atom
 
 Returns the derivative of the nuclear repulsion w.r.t the center i. Units Eₕ/Å
 """ 
-function ∇nuclear_repulsion(atoms::Vector{Atom}, i)
+function ∇nuclear_repulsion(atoms::Vector{<:Atom}, i)
     E = zeros(3)
     At = atoms[i]
 
@@ -55,11 +55,11 @@ end
 ∇nuclear_repulsion(M::Molecule, i) = ∇nuclear_repulsion(M.atoms, i)
 
 """
-    Molecules.center_of_mass(atoms::Vector{Atom}, i) where A <: Atom
+    Molecules.center_of_mass(atoms::Vector{<:Atom}, i) where A <: Atom
 
 Returns the center of mass of a group if atoms.
 """ 
-function center_of_mass(atoms::Vector{Atom})
+function center_of_mass(atoms::Vector{<:Atom})
 
     # Compute the mass-weighted XYZ
     cm_xyz = sum(a.xyz * a.mass for a in atoms)
@@ -77,7 +77,7 @@ center_of_mass(M::Molecule) = center_of_mass(M.atoms)
 
 Returns the nuclear dipole moment w.r.t the origin o.
 """
-function nuclear_dipole(atoms::Vector{Atom}, o = [0.0, 0.0, 0.0]) 
+function nuclear_dipole(atoms::Vector{<:Atom}, o = [0.0, 0.0, 0.0]) 
     charges = [a.Z for a in atoms]
     r = [a.xyz .- o for a in atoms]
     return sum(r .* charges)
