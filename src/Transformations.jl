@@ -1,25 +1,32 @@
 """
-    Molecules.translate!(atoms::Vector{Atom}, r::Vector{T})
+    Molecules.translate!(atoms::Vector{<:Atom}, r::Vector{T})
 
 Translate atoms into position r.
 """
-function translate!(atoms::Vector{Atom}, r::Vector{T}) where T
-    for a in atoms
-        for i = 1:3
-            a.xyz[i] -= r[i]
-        end
+function translate!(atoms::Vector{<:Atom}, r)
+    for a in 1:length(atoms)
+        atoms[a] = translate(atoms[a], r)
     end
 end
 
 """
-    Molecules.translate(atoms::Vector{Atom})
+    Molecules.translate(atoms::Vector{<:Atom})
 
 Return a copy of atoms translated into position r.
 """
-function translate(atoms::Vector{Atom}, r::Vector{T}) where T
+function translate(atoms::Vector{<:Atom}, r)
     newatoms = deepcopy(atoms)
     translate!(newatoms, r)
     return newatoms
+end
+
+"""
+    Molecules.translate(atom::A, r) where A <: Atom
+
+Return a new `Atom` translated into position r.
+"""
+function translate(atom::A, r) where A <: Atom
+    return Atom(atom.Z, atom.mass, atom.xyz - r)
 end
 
 """
@@ -33,11 +40,11 @@ function Cn(v, n::Integer)
 end
 
 """
-    Molecules.rotation_matrix(v, θ::AbstractFloat)
+    Molecules.rotation_matrix(v, θ)
 
 Returns a rotation matrix by θ about a rotation axis v
 """
-function rotation_matrix(V, θ::AbstractFloat)
+function rotation_matrix(V, θ)
     cosθ = cos(θ)
     sinθ = sin(θ)
     v = normalize(V)
@@ -59,10 +66,10 @@ function rotation_matrix(V, θ::AbstractFloat)
             end
         end
     end
-    return O
+    return SMatrix{3,3}(O)
 end
 
-function rotation_matrixd(v, θ::AbstractFloat)
+function rotation_matrixd(v, θ)
     r = deg2rad(θ)
     return rotation_matrix(v, r)
 end
@@ -83,7 +90,7 @@ function reflection_matrix(V)
             O[j,i] = O[i,j]
         end
     end
-    return O
+    return SMatrix{3,3}(O)
 end
 
 function σ(v)
@@ -91,7 +98,7 @@ function σ(v)
 end
 
 """
-    Molecules.Sn(v::Vector, n::int)
+    Molecules.Sn(v, n)
 
 Returns Sn improper rotation about vector v
 """    
@@ -105,11 +112,11 @@ end
 Returns a diagonal matrix with -1 along the diagonal
 """
 function inversion_matrix()
-    a = zeros(Int8, (3,3))
-    for i = 1:3
-        a[i,i] = -1
-    end    
-    return a
+    return SMatrix{3,3}(
+        [-1.0  0.0 0.0;
+          0.0 -1.0 0.0;
+          0.0  0.0 -1.0]
+    )
 end
 
 function i()
@@ -117,35 +124,38 @@ function i()
 end
     
 """
-    Molecules.transform!(A::Vector{Atom}, O::Array)
+    Molecules.transform!(A::Vector{<:Atom}, O)
 
-Transforms xyz coordinates of each atom in A by some operation O
+Transforms xyz coordinates of each atom in A by some Matrix O
 """
-function transform!(atoms::Vector{Atom}, O::Array)
-    for a in atoms
-        a.xyz .= O * a.xyz
+function transform!(atoms::Vector{<:Atom}, O)
+    for a in 1:length(atoms)
+        atoms[a] = transform(atoms[a], O)
     end
 end
 
 """
-    Molecules.transform(A::Vector{Atom}, O::Array)
+    Molecules.transform(A::Vector{<:Atom}, O)
 
-Transforms xyz coordinates of each atom in A by some operation O
-Returns new list of atoms with transformed xyz coordinates
+Retruns a list of atoms with transformed xyz coordinates by some Matrix O
 """
-function transform(atoms::Vector{Atom}, O::Array)
+function transform(atoms::Vector{<:Atom}, O)
     newatoms = deepcopy(atoms)
     transform!(newatoms, O)
     return newatoms
 end
 
+function transform(atom::A, O) where A <: Atom
+    return Atom(atom.Z, atom.mass, O * atom.xyz)
+end
+
 """
-    Molecules.issame(A::Vector{Atom}, B::Vector{Atom})
+    Molecules.issame(A::Vector{<:Atom}, B::Vector{<:Atom})
 
 Checks to see if two arrays of atoms are equivalent under permutation
 Returns true or false
 """
-function isequivalent(A::Vector{Atom}, B::Vector{Atom})
+function isequivalent(A::Vector{<:Atom}, B::Vector{<:Atom})
     len = length(A)
     if size(atom_map(A,B), 1) == len
         return true
@@ -153,7 +163,7 @@ function isequivalent(A::Vector{Atom}, B::Vector{Atom})
     return false
 end
 
-function atom_map(A::Vector{Atom}, B::Vector{Atom})
+function atom_map(A::Vector{<:Atom}, B::Vector{<:Atom})
     h = []
     len = length(A)
     #println(A, "\n", B)

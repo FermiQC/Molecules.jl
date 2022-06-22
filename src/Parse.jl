@@ -87,7 +87,7 @@ function parse_string(molstring::String; unit=:angstrom)
             throw(ArgumentError("Failed to process XYZ coordinates in line $line_num:\n $(m[2:4])"))
         end
 
-        push!(atoms, Atom(Z, mass, xyz))
+        push!(atoms, Atom(Z, mass, SVector{3}(xyz)))
         line_num += 1
     end
 
