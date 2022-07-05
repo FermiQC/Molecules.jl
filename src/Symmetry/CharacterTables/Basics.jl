@@ -18,6 +18,7 @@ struct SymText
     class_map
     atom_map
     mult_table
+
 end
 
 struct PG
