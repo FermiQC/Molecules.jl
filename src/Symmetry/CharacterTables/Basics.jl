@@ -17,6 +17,7 @@ struct SymText
     ctab
     class_map
     atom_map
+    mult_table
 end
 
 struct PG

@@ -54,7 +54,7 @@ function generate_σv(n)
     rot_mat = Cn(z_axis, n)
     for i = 1:n
         axis = ((rot_mat ^ i) * x_axis)×z_axis
-        push!(symels, Symel("sigmav_$(i % n + 1)", σ(axis)))
+        push!(symels, Symel("σv_$(i % n + 1)", σ(axis)))
     end
     return symels
 end
@@ -67,7 +67,7 @@ function generate_σd(n)
     base_axis = Cn(z_axis, 4*n)*x_axis # Rotate x-axis by Cn/2 to produce an axis for σd's
     for i = 1:n
         axis = ((rot_mat ^ i) * base_axis)×z_axis
-        push!(symels, Symel("sigmad_$(i % n + 1)", σ(axis))) # Take moduli so that 360° rotated axis is 0
+        push!(symels, Symel("σd_$(i % n + 1)", σ(axis))) # Take moduli so that 360° rotated axis is 0
     end
     return symels
 end

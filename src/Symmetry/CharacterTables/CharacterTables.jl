@@ -11,6 +11,6 @@ include("Basics.jl")
 include("PointGroupGenerators.jl")
 include("CharacterTableGenerators.jl")
 include("MultiplicationTable.jl")
+include("IrrepMats.jl")
 include("Main.jl")
-
 end

@@ -437,7 +437,7 @@ function highest_ordered_axis(rotations::Vector{Any})
     return sort(ns)[len]
 end
 
-function is_there_sigmah(mol::Molecule, paxis)
+function is_there_σh(mol::Molecule, paxis)
     """
     Checks for reflection across plane with normal vector
     equal to principal rotation axis
@@ -447,7 +447,7 @@ function is_there_sigmah(mol::Molecule, paxis)
     return Molecules.isequivalent(mol, molB)
 end
 
-function is_there_sigmav(mol, SEAs, paxis)
+function is_there_σv(mol, SEAs, paxis)
     """
     Checks for the presence of reflection planes that
     contain the principal c2_axis

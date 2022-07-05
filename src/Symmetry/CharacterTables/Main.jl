@@ -5,7 +5,7 @@ function pg_to_symels(PG)
     σh = [1 0 0; 0 1 0; 0 0 -1]
     if pg.family == "C"
         if pg.subfamily == "h"
-            push!(symels, Symel("sigmah", σh)) # sigmah
+            push!(symels, Symel("σh", σh)) # σh
             if pg.n % 2 == 0
                 push!(symels, Symel("i", i()))
             end
@@ -24,7 +24,7 @@ function pg_to_symels(PG)
             σvs = generate_σv(n)
             symels = vcat(symels, cns, σvs, σds)
         elseif pg.subfamily == "s"
-            push!(symels, Symel("sigmah", σh))
+            push!(symels, Symel("σh", σh))
         elseif pg.subfamily == "i"
             push!(symels, Symel("i", i()))
         elseif isnothing(pg.subfamily)
@@ -35,7 +35,7 @@ function pg_to_symels(PG)
         end
     elseif pg.family == "D"
         if pg.subfamily == "h"
-            push!(symels, Symel("sigmah", σh))
+            push!(symels, Symel("σh", σh))
             if pg.n % 2 == 0
                 push!(symels, Symel("i", i()))
                 n = pg.n >> 1
@@ -144,7 +144,15 @@ function pg_to_chartab(PG)
     pg = parse_pg_str(PG)
     irreps = []
     if pg.family == "C"
-        if pg.subfamily == "v"
+        if pg.subfamily == "s"
+            irreps = ["A'","A''"]
+            classes = ["E", "σh"]
+            chars = [1 1; 1 -1]
+        elseif pg.subfamily == "i"
+            irreps = ["Ag","Au"]
+            classes = ["E", "i"]
+            chars = [1 1; 1 -1]
+        elseif pg.subfamily == "v"
             irreps, classes, chars = Cnv_irr(pg.n)
         elseif pg.subfamily == "h"
             irreps, classes, chars = Cnh_irr(pg.n)
@@ -265,13 +273,17 @@ end
 
 function generate_symel_to_class_map(symels::Vector{Symel}, ctab::Chartable)
     pg = parse_pg_str(ctab.name)
-    ns = pg.n>>1 # pg.n floor divided by 2
+    if pg.n !== nothing
+        ns = pg.n>>1 # pg.n floor divided by 2
+    end
     ncls = length(ctab.classes)
     nsymel = length(symels)
     class_map = zeros(Int64, nsymel)
     class_map[1] = 1 # E is always first
     if pg.family == "C"
-        if pg.subfamily == "h"
+        if pg.subfamily == "s" || pg.subfamily == "i"
+            class_map[2] = 2
+        elseif pg.subfamily == "h"
             if pg.n % 2 == 0
                 class_map[4:pg.n+2] .= 2:pg.n # C_n
                 class_map[3] = pg.n+1 # i
@@ -505,13 +517,27 @@ end
 function do_things2(pg)
     symels = pg_to_symels(pg)
     ctab = pg_to_chartab(pg)
-    println(ctab.class_orders)
     class_map = generate_symel_to_class_map(symels, ctab)
-    println(class_map)
+    mtab = build_mult_table(symels)
+    #println(mtab.table)
+    reg_reprs = build_regular_repr(mtab)
+    return reg_reprs
 end
 
 function symtext_from_file(fn)
     mol = Molecules.parse_file(fn)
+    return symtext_from_mol(mol)
+    #mol = Molecules.translate(mol, Molecules.center_of_mass(mol))
+    #pg, paxis, saxis = Molecules.Symmetry.find_point_group(mol)
+    #symels = pg_to_symels(pg)
+    #symels = rotate_symels_to_mol(symels, paxis, saxis)
+    #ctab = pg_to_chartab(pg)
+    #class_map = generate_symel_to_class_map(symels, ctab)
+    #atom_map = get_atom_mapping(mol, symels)
+    #return SymText(pg, symels, ctab, class_map, atom_map)
+end
+
+function symtext_from_mol(mol)
     mol = Molecules.translate(mol, Molecules.center_of_mass(mol))
     pg, paxis, saxis = Molecules.Symmetry.find_point_group(mol)
     symels = pg_to_symels(pg)
@@ -519,5 +545,6 @@ function symtext_from_file(fn)
     ctab = pg_to_chartab(pg)
     class_map = generate_symel_to_class_map(symels, ctab)
     atom_map = get_atom_mapping(mol, symels)
-    return SymText(pg, symels, ctab, class_map, atom_map)
+    mtable = build_mult_table(symels)
+    return SymText(pg, symels, ctab, class_map, atom_map, mtable)
 end
