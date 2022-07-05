@@ -36,7 +36,7 @@ function rotation_set_intersection(rotation_set)
     return out
 end
 
-function find_rotation_sets(mol::Molecule, SEAs)
+function find_rotation_sets(mol::Vector{<:Atom}, SEAs)
     """
     Loop through SEAs to label each set, and find principal axis and potential rotation orders
     as outlined in the flowchart in DOI: 10.1002/jcc.23493
@@ -122,7 +122,7 @@ function isfactor(n, a)
     end
 end
 
-function find_rotations(mol::Molecule, rotation_set)
+function find_rotations(mol::Vector{<:Atom}, rotation_set)
     """
     Find all actual rotation elements for the Molecule
     based off of potential rotation elements from 'find_rotation_sets'
@@ -147,7 +147,7 @@ function find_rotations(mol::Molecule, rotation_set)
     return out
 end
 
-function find_c2(mol::Molecule, SEAs)
+function find_c2(mol::Vector{<:Atom}, SEAs)
     """
     Find C2 rotations as outlined in the paper DOI: 10.1002/jcc.23493
     Uses 'c2a', 'c2b', and 'c2c' to determine the presence of at least
@@ -181,7 +181,7 @@ function find_c2(mol::Molecule, SEAs)
     return nothing
 end
 
-function is_there_ortho_c2(mol::Molecule, cn_axis::Vector{T}, SEAs) where T
+function is_there_ortho_c2(mol::Vector{<:Atom}, cn_axis, SEAs) where T
     """
     Finds C2 axes orthogonal to principal axis 'paxis' of Molecule
     When passing a principal axis to 'c2a', 'c2b', and 'c2c', returns
@@ -216,7 +216,7 @@ function is_there_ortho_c2(mol::Molecule, cn_axis::Vector{T}, SEAs) where T
     return false, nothing
 end
 
-function num_C2(mol::Molecule, SEAs)
+function num_C2(mol::Vector{<:Atom}, SEAs)
     """
     Counts number of unique C2 axes. Particularly useful for
     finding high symmetry groups. Uses C2 algorithms a and b

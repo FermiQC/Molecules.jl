@@ -11,7 +11,7 @@ import Molecules: center_of_mass, translate
     
     The procedure for detecting symmetry is similar to that employed in doi:10.1002/jcc.23493.
 """
-function find_point_group(mol::Molecule)
+function find_point_group(mol::Vector{<:Atom})
     # Translate Molecule to COM origin
     mol = translate(mol, center_of_mass(mol))
     # Calculate moment of inertia tensor (moit) eigenvalues
