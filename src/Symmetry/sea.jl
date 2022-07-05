@@ -17,7 +17,7 @@ function distance(A::Atom, B::Atom)
     return (((a[1]-b[1])^2) + ((a[2]-b[2])^2) + ((a[3]-b[3])^2))^0.5
 end
 
-function buildD(mol::Molecule)
+function buildD(mol::Vector{<:Atom})
     len = size(mol)[1]
     atoms = []
     arr = zeros(Float64, (len,len))

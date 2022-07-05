@@ -1,5 +1,5 @@
 """
-    Molecules.function parse_file(file::String; unit=:angstrom, F=Float64)
+    Molecules.function parse_file(file::String; unit=:angstrom)
 
 Reads a xyz file and return a vector o `Atom` objects. Units can be indicated through the keyword argument `unit`.
 
@@ -11,7 +11,7 @@ function parse_file(file::String; unit=:angstrom)
 end
 
 """
-    Molecules.function parse_string(molstring::String; unit=:angstrom, F=Float64)
+    Molecules.function parse_string(molstring::String; unit=:angstrom)
 
 Reads a String representing a XYZ file and return a vector o `Atom` objects. Units can be indicated through the keyword argument `unit`.
 
@@ -31,7 +31,7 @@ function parse_string(molstring::String; unit=:angstrom)
     # Regex for parsing
     # Match a floating point, e.g. XYZ coordinate or mass, with at least one blank space on the left of it
     re_float = r"\s+([+-]?(?:\d+[.]?\d*|\d*[.]?\d+))"
-    # Match an atom id (String for atomic symbol or integer for atomic number) with one or more blank spaces on the left of it
+    # Match an atom id (String for atomic symbol or integer for atomic number) with zero or more blank spaces on the left of it
     re_id = r"\s*(\d+|\w{1,2})"
 
     atoms = Atom[]
@@ -63,6 +63,10 @@ function parse_string(molstring::String; unit=:angstrom)
             # id is taken as a Symbol if a String is given ("H" → :H), otherwise convert to number ("6" → 6)
             id = occursin(r"\d+", m.captures[1]) ? parse(Int64, m.captures[1]) : Symbol(m.captures[1])
 
+            if !haskey(elements, id)
+                throw(ArgumentError("Atom `$(id)` not recognized."))
+            end
+
             # Get mass from PeriodicTable
             mass = convert(Float64, elements[id].atomic_mass / 1u"u")
             str_xyz = m.captures[2:4]
@@ -70,6 +74,9 @@ function parse_string(molstring::String; unit=:angstrom)
             throw(ArgumentError("Failed to process data in line $line_num:\n $(line)"))
         end
 
+        if !haskey(elements, id)
+            throw(ArgumentError("Atom `$(id)` not recognized."))
+        end
         Z = elements[id].number
 
         # Convert String vector to Float vector
@@ -80,7 +87,7 @@ function parse_string(molstring::String; unit=:angstrom)
             throw(ArgumentError("Failed to process XYZ coordinates in line $line_num:\n $(m[2:4])"))
         end
 
-        push!(atoms, Atom(Z, mass, xyz))
+        push!(atoms, Atom(Z, mass, SVector{3}(xyz)))
         line_num += 1
     end
 
@@ -88,14 +95,20 @@ function parse_string(molstring::String; unit=:angstrom)
 end
 
 """
-    get_xyz(M::Molecule)
+    get_xyz(M::Vector{A}) where A <: Atom
 
-Returns a XYZ string in angstrom for the given Molecule.
+Returns a XYZ string in angstrom for the list of atoms
 """
-function get_xyz(M::Molecule)
+get_xyz(M::Molecule) = get_xyz(M.atoms)
+function get_xyz(M::Vector{A}) where A <: Atom
     molstring = ""
-    for A in M
-        molstring *= format("{}   {: 15.12f}   {: 15.12f}   {: 15.12f}\n", Molecules.symbol(A), A.xyz...)
+    for atom in M
+        molstring *= format("{}   {: 15.12f}   {: 15.12f}   {: 15.12f}\n", Molecules.symbol(atom), atom.xyz...)
     end
     return molstring
 end
+
+# Create Molecule object from string
+Molecule(molstring::String; unit=:angstrom) = Molecule(Molecules.parse_string(molstring, unit=unit))
+Molecule(molstring::String, charge::Int, multiplicity::Int; unit=:angstrom) = 
+Molecule(Molecules.parse_string(molstring, unit=unit), charge, multiplicity)
