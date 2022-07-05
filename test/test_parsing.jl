@@ -36,7 +36,7 @@
     @test Molecules.parse_string(molstringC) == atoms
 
     atoms = [
-        Atom(8, 15.999,  [1.2091536548,      1.7664118189,     -0.0171613972])
+        Atom(8, 15.999, [1.2091536548,      1.7664118189,     -0.0171613972])
         Atom(1, 1.008,  [2.1984800075,      1.7977100627,      0.0121161719])
         Atom(1, 1.008,  [0.9197881882,      2.4580185570,      0.6297938832])
     ]
@@ -44,6 +44,29 @@
     file_path = joinpath(@__DIR__, "xyz/water.xyz")
     @test Molecules.parse_file(file_path) == atoms
 
-    atoms = Molecules.parse_string(molstringC)
-    @test Molecules.get_xyz(atoms) |> chomp == molstringA 
+    mol = Molecule(molstringC)
+    @test Molecules.get_xyz(mol) |> chomp == molstringA 
+
+    # Test parsing in bohr
+    atoms = Molecules.parse_string("""
+    H 0.0 0.0 0.0
+    H 1.0 0.0 0.0
+    """; unit=:bohr)
+    @test Molecules.nuclear_repulsion(atoms) == 1.0
+
+    # Error due invalid unit
+    @test_throws ArgumentError Molecules.parse_string("""
+    H 0.0 0.0 0.0"""; unit=:borabora)
+
+    # Test molecule object
+    mol = Molecule(molstringA)
+    @test mol.Nα == mol.Nβ == length(mol.atoms) == 5
+    @test_throws DomainError Molecule(molstringA, 11, 2)
+    @test_throws DomainError Molecule(molstringA, 0, 0)
+    @test_throws DomainError Molecule(molstringA, 1, 1)
+
+    # Test erros during parsing
+    @test_throws ArgumentError Molecule("Some nonsense")
+    @test_throws ArgumentError Molecule("X 1.0 1.0 1.0")
+    @test_throws ArgumentError Molecule("X 5.0 1.0 1.0 1.0")
 end
