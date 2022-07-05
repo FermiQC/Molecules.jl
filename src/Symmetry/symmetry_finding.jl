@@ -437,7 +437,7 @@ function highest_ordered_axis(rotations::Vector{Any})
     return sort(ns)[len]
 end
 
-function is_there_σh(mol::Molecule, paxis)
+function is_there_σh(mol, paxis)
     """
     Checks for reflection across plane with normal vector
     equal to principal rotation axis
@@ -532,7 +532,7 @@ function planar_mol_axis(mol)
             b = normalize(mol[j].xyz)
             chk = dot(a, b)
             if !isapprox(chk, 1.0, atol=tol)
-                return normalize!(cross(a,b))
+                return normalize(cross(a,b))
             end
         end
     end
