@@ -274,7 +274,7 @@ function c2a(mol, sea)
             molB = Molecules.transform(mol, c2)
             check = Molecules.isequivalent(mol, molB)
             if check
-                return midpoint
+                return normalize(midpoint)
             else
                 continue
             end
@@ -290,7 +290,7 @@ function c2b(mol, sea)
     """
     len = size(sea.set)[1]
     for i = 1:len
-        c2_axis = mol[sea.set[i]].xyz
+        c2_axis = normalize(mol[sea.set[i]].xyz)
         c2 = Molecules.Cn(c2_axis, 2)
         molB = Molecules.transform(mol, c2)
         check = Molecules.isequivalent(mol, molB)
@@ -310,7 +310,7 @@ function c2c(mol, sea1, sea2)
     """
     rij = mol[sea1.set[1]].xyz - mol[sea1.set[2]].xyz
     rkl = mol[sea2.set[1]].xyz - mol[sea2.set[2]].xyz
-    c2_axis = cross(rij, rkl)
+    c2_axis = normalize(cross(rij, rkl))
     c2 = Molecules.Cn(c2_axis, 2)
     molB = Molecules.transform(mol, c2)
     if Molecules.isequivalent(mol, molB)
@@ -334,7 +334,7 @@ function c2a(mol, cn_axis, sea)
             check = Molecules.isequivalent(mol, molB)
             if check
                 #return true
-                return midpoint
+                return normalize(midpoint)
             else
                 continue
             end
@@ -369,7 +369,7 @@ end
 function c2c(mol, cn_axis, sea1, sea2)
     rij = mol[sea1.set[1]].xyz - mol[sea1.set[2]].xyz
     rkl = mol[sea2.set[1]].xyz - mol[sea2.set[2]].xyz
-    c2_axis = cross(rij, rkl)
+    c2_axis = normalize(cross(rij, rkl))
     if issame_axis(c2_axis, cn_axis)
         return nothing
         #return false
@@ -395,7 +395,7 @@ function all_c2a(mol, sea)
             molB = Molecules.transform(mol, c2)
             check = Molecules.isequivalent(mol, molB)
             if check
-                push!(out, midpoint)
+                push!(out, normalize(midpoint))
             else
                 continue
             end
@@ -411,7 +411,7 @@ function all_c2b(mol, sea)
     out = []
     len = size(sea.set)[1]
     for i = 1:len
-        c2_axis = mol[sea.set[i]].xyz
+        c2_axis = normalize(mol[sea.set[i]].xyz)
         c2 = Molecules.Cn(c2_axis, 2)
         molB = Molecules.transform(mol, c2)
         check = Molecules.isequivalent(mol, molB)
