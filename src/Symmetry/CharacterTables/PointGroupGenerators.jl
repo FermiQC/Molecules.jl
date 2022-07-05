@@ -48,13 +48,18 @@ function generate_Sn(n, S2n)
 end
 
 function generate_σv(n)
+    if n % 2 == 0
+        nσvs = n >> 1
+    else
+        nσvs = n
+    end
     symels = Vector{Symel}([])
     x_axis = [1;0;0] # Orient C2 and σv along x-axis
     z_axis = [0;0;1]
     rot_mat = Cn(z_axis, n)
-    for i = 1:n
+    for i = 0:nσvs-1
         axis = ((rot_mat ^ i) * x_axis)×z_axis
-        push!(symels, Symel("σv_$(i % n + 1)", σ(axis)))
+        push!(symels, Symel("σv_$(i+1)", σ(axis)))
     end
     return symels
 end
@@ -65,9 +70,9 @@ function generate_σd(n)
     z_axis = [0;0;1]
     rot_mat = Cn(z_axis, 2*n)
     base_axis = Cn(z_axis, 4*n)*x_axis # Rotate x-axis by Cn/2 to produce an axis for σd's
-    for i = 1:n
+    for i = 0:n-1
         axis = ((rot_mat ^ i) * base_axis)×z_axis
-        push!(symels, Symel("σd_$(i % n + 1)", σ(axis))) # Take moduli so that 360° rotated axis is 0
+        push!(symels, Symel("σd_$(i + 1)", σ(axis)))
     end
     return symels
 end

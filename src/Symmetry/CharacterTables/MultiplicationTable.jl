@@ -16,8 +16,7 @@ end
 function multifly(symels::Vector{Symel}, A::Symel, B::Symel)
     Crrep = A.rrep * B.rrep
     for (i,g) in enumerate(symels)
-        s = sum(abs.(g.rrep - Crrep))
-        if abs(s) < tol
+        if isapprox(Crrep, g.rrep)
             return i,g
         end
     end

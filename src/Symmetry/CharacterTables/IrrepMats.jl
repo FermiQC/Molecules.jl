@@ -1,5 +1,9 @@
 c3 = cos(π/3)
 s3 = sin(π/3)
+c5 = cos(π/5)
+s5 = sin(π/5)
+c25 = cos(2π/5)
+s25 = sin(2π/5)
 irrm_C3v = Dict(
     "A1" => [1,1,1,1,1,1],
     "A2" => [1,1,1,-1,-1,-1],
@@ -12,35 +16,39 @@ irrm_C4v = Dict(
     "B2" => [1,-1,-1,1,-1,-1,1,1],
     "E"  => [[1 0;0 1],[0 1; -1 0],[0 -1; 1 0],[-1 0; 0 -1],[1 0; 0 -1],[-1 0; 0 1],[0 1; 1 0],[0 -1; -1 0]]
 )
-
+irrm_C5v = Dict(
+    "A1" => [1,1,1,1,1,1,1,1,1,1],
+    "A2" => [1,1,1,1,1,-1,-1,-1,-1,-1],
+    "E1" => [[1 0;0 1],[c5 s5; -s5 c5],[c5 -s5; s5 c5],[c25 s25; -s25 c25],[c25 -s25; s25 c25],[c25 s25; c25 s25],[c25 s25; c25 s25],[c25 s25; c25 s25],[c25 s25; c25 s25],[1 0;0 -1]],
+)
 function irrep_things()
     return irrm_C4v
 end
 
-function mtable_from_irrm(irrm)
-    l = length(irrm)
-    mtab = zeros(l,l)
-    for i = 1:l
-        for j = 1:l
-            mtab[i,j] = multifly(irrm, i, j)
+function mtable_check(irrm, mtable)
+    l = size(mtable)[1]
+    for i = 1:l, j = 1:l
+        if mtable[i,j] ∈ multifly(irrm, i, j)
+            continue
+        else
+            return false
         end
     end
-    return mtab
+    return true
 end
 
 function multifly(irrm, a, b)
     l = length(irrm)
+    out = []
     errl = []
     for i = 1:l
         r = irrm[a]*irrm[b]
         push!(errl, r)
-        println(irrm[i])
-        println(isapprox(irrm[i], irrm[a]*irrm[b]))
         if isapprox(irrm[i], r, atol = 1e-10)
-            return i
+            push!(out, i)
         end
     end
-    return errl[1]
+    return out
     return 0
 end
 

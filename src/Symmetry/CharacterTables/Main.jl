@@ -21,7 +21,7 @@ function pg_to_symels(PG)
                 n = pg.n
                 σds = Vector{Symel}([])
             end
-            σvs = generate_σv(n)
+            σvs = generate_σv(pg.n)
             symels = vcat(symels, cns, σvs, σds)
         elseif pg.subfamily == "s"
             push!(symels, Symel("σh", σh))
@@ -50,7 +50,7 @@ function pg_to_symels(PG)
             end
             cns = generate_Cn(pg.n)
             sns = generate_Sn(pg.n)
-            σvs = generate_σv(n)
+            σvs = generate_σv(pg.n)
             #c2s = generate_C2(pg.n)
             symels = vcat(symels, cns, c2s, sns, σvs, σds)
         elseif pg.subfamily == "d"
@@ -427,6 +427,7 @@ function get_euler_angles(paxis, saxis)
     x = [1.0;0.0;0.0]
     y = [0.0;1.0;0.0]
     z = [0.0;0.0;1.0]
+    println(paxis, saxis)
     ynew = paxis×saxis
     zxp = normalize!(z×paxis)
     if isnan(zxp[1])
