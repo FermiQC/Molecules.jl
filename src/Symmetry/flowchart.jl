@@ -29,17 +29,40 @@ function find_point_group(mol::Vector{<:Atom})
         # Molecule with high symmetry, count number of C2 operations and look for i operation to determine PG
         D = buildD(mol)
         SEAs = findSEA(D, 5)
-        n = num_C2(mol, SEAs)
+        n, axes = num_C2(mol, SEAs)
         invertable = Molecules.isequivalent(Molecules.transform(mol, Molecules.inversion_matrix()), mol)
         if n == 15
+            # paxis is any C2 axis, saxis is defined as the C2 axis that is coplanar with: paxis and the nearest C3 axis to paxis
+            paxis = axes[1]
+            c3s = find_C3s_for_Ih(mol)
+            for c3 in c3s
+                if isapprox(acos(abs(dot(c3, paxis))), 0.36486382647383764, atol = 1E-4)
+                    taxis = normalize(cross(c3, paxis))
+                    saxis = normalize(cross(taxis,paxis))
+                    break
+                end
+            end
+            #for a in axes
+            #    if isapprox(0.0, dot(paxis,a), atol=tol)
+            #        saxis = a
+            #        break
+            #    end
+            #end
             pg = "Ih"
         elseif n == 9
+            # paxis and saxis are orthogonal C4 axes
+            c4s = find_C4s_for_Oh(mol)
+            paxis = c4s[1]
+            saxis = c4s[2]
             if invertable
                 pg = "Oh"
             else
                 pg = "O"
             end
         elseif n == 3
+            # paxis and saxis correspond to any two orthogonal C2 axes
+            paxis = axes[1]
+            saxis = axes[2]
             if invertable
                 pg = "Th"
             else

@@ -255,7 +255,7 @@ function num_C2(mol::Vector{<:Atom}, SEAs)
             push!(unique_axes, i)
         end
     end
-    return size(unique_axes)[1]
+    return size(unique_axes)[1], unique_axes
 end
 
 function c2a(mol, sea)
@@ -537,4 +537,92 @@ function planar_mol_axis(mol)
         end
     end
     return nothing
+end
+
+function find_C3s_for_Ih(mol)
+    """
+    Finds the twenty C3 axes for an Ih point group so the paxis and saxis can be defined
+    """
+    c3_axes = []
+    for i in mol, j in mol, k in mol
+        if i != j && i != k
+            rij = i.xyz - j.xyz
+            rjk = j.xyz - k.xyz
+            rik = i.xyz - k.xyz
+            nij = norm(rij)
+            njk = norm(rjk)
+            nik = norm(rik)
+            if isapprox(nij, njk, atol=tol) && isapprox(nij, nik, atol=tol)
+                c3_axis = normalize(cross(rij, rjk))
+                c3 = Molecules.Cn(c3_axis, 3)
+                molB = Molecules.transform(mol, c3)
+                if Molecules.isequivalent(mol, molB)
+                    push!(c3_axes, c3_axis)
+                end
+            end
+        end
+    end
+    unique_axes = [c3_axes[1]]
+    for i in c3_axes
+        check = true
+        for j in unique_axes
+            if issame_axis(i,j)
+                check = false
+                break
+            end
+        end
+        if check
+            push!(unique_axes, i)
+        end
+    end
+    chk = size(unique_axes)[1]
+    if chk != 10
+        throw(ErrorException("Unexpected number of C3 axes for Ih point group: Found $(chk) unique C3 axes"))
+    end
+    return unique_axes
+end
+
+function find_C4s_for_Oh(mol)
+    """
+    Finds the three C4 axes for an Oh point group so the paxis and saxis can be defined
+    """
+    c4_axes = []
+    for i in mol, j in mol, k in mol, l in mol
+        if i != j && k != l && i != k
+            rij = i.xyz - j.xyz
+            rjk = j.xyz - k.xyz
+            rkl = k.xyz - l.xyz
+            ril = i.xyz - l.xyz
+            nij = norm(rij)
+            njk = norm(rjk)
+            nkl = norm(rkl)
+            nil = norm(ril)
+            if isapprox(nij, njk, atol=tol) && isapprox(nkl, nil, atol=tol) && isapprox(nij, nkl, atol=tol)
+                c4_axis = normalize(cross(rij, rjk))
+                c4 = Molecules.Cn(c4_axis, 4)
+                molB = Molecules.transform(mol, c4)
+                if Molecules.isequivalent(mol, molB)
+                    push!(c4_axes, c4_axis)
+                end
+            end
+        end
+    end
+    unique_axes = [c4_axes[1]]
+    for i in c4_axes
+        check = true
+        for j in unique_axes
+            if issame_axis(i,j)
+                check = false
+                break
+            end
+        end
+        if check
+            push!(unique_axes, i)
+        end
+    end
+    chk = size(unique_axes)[1]
+    if chk != 3
+        throw(ErrorException("Unexpected number of C4 axes for Oh point group: Found $(chk) unique C4 axes"))
+    end
+    return unique_axes
 end

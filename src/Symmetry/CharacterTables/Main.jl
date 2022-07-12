@@ -176,7 +176,7 @@ function pg_to_chartab(PG)
         if pg.family == "T"
             if pg.subfamily == "h"
                 irreps, classes, chars = (["Ag","Au","Eg","Eu","Tg","Tu"],
-                 [1,2,3,4,5,6],
+                 ["E", "4C_3", "4C_3^2", "3C_2", "i", "S_6", "S_6^5", "3σh"],
                  [1.0  1.0  1.0  1.0  1.0  1.0  1.0  1.0;
                   1.0  1.0  1.0  1.0 -1.0 -1.0 -1.0 -1.0;
                   2.0  cp3  cp3  2.0  2.0  cp3  cp3  1.0;
@@ -185,7 +185,7 @@ function pg_to_chartab(PG)
                   3.0  0.0  0.0 -1.0 -1.0  0.0  0.0  1.0])
             elseif pg.subfamily == "d"
                 irreps, classes, chars = (["A1","A2","E","T1","T2"],
-                 [1,2,3,4,5],
+                 ["E", "8C_3", "3C_2", "6S_4", "6σd"],
                  [1.0  1.0  1.0  1.0  1.0;
                   1.0  1.0  1.0 -1.0 -1.0;
                   2.0 -1.0  2.0  0.0  0.0;
@@ -193,7 +193,7 @@ function pg_to_chartab(PG)
                   3.0 -1.0 -1.0 -1.0  1.0])
             else
                 irreps, classes, chars = (["A","E","T"],
-                 [1,2,3],
+                 ["E", "4C_3", "4C_3^2", "3C_2"],
                  [1.0  1.0  1.0  1.0;
                   2.0  cp3  cp3  2.0;
                   3.0  0.0  0.0 -1.0])
@@ -201,7 +201,7 @@ function pg_to_chartab(PG)
         elseif pg.family == "O"
             if pg.subfamily == "h"
                 irreps, classes, chars = (["A1g","A2g","Eg","T1g","T2g","A1u","A2u","Eu","T1u","T2u"],
-                 [1,2,3,4,5,6,7,8,9,10],
+                 ["E", "8C_3", "6C_2", "6C_4", "3C_2", "i", "6S_4", "8S_6", "3σh", "6σd"],
                  [1.0  1.0  1.0  1.0  1.0  1.0  1.0  1.0  1.0  1.0;
                   1.0  1.0 -1.0 -1.0  1.0  1.0 -1.0  1.0  1.0 -1.0;
                   2.0 -1.0  0.0  0.0  2.0  2.0  0.0 -1.0  2.0  0.0;
@@ -214,7 +214,7 @@ function pg_to_chartab(PG)
                   3.0  0.0  1.0 -1.0 -1.0 -3.0  1.0  0.0  1.0 -1.0])
             else
                 irreps, classes, chars = (["A1","A2","E","T1","T2"],
-                 [1,2,3,4,5],
+                 ["E", "6C_4", "3C_2", "8C_3", "6C_2"],
                  [1.0  1.0  1.0  1.0  1.0;
                   1.0 -1.0  1.0  1.0 -1.0;
                   2.0  0.0  2.0 -1.0  0.0;
@@ -224,7 +224,7 @@ function pg_to_chartab(PG)
         elseif pg.family == "I"
             if pg.subfamily == "h"
                 irreps, classes, chars = (["Ag","T1g","T2g","Gg","Hg","Au","T1u","T2u","Gu","Hu"],
-                 [1,2,3,4,5,6,7,8,9,10],
+                 ["E", "12C_5", "12C_5^2", "20C_3", "15C_2", "i", "12S_10", "12S_10^3", "20S_6", "15σ"],
                  [1.0  1.0  1.0  1.0  1.0  1.0  1.0  1.0  1.0  1.0;
                   3.0  pr5  mr5  0.0 -1.0  3.0  mr5  pr5  0.0 -1.0;
                   3.0  mr5  pr5  0.0 -1.0  3.0  pr5  mr5  0.0 -1.0;
@@ -237,7 +237,7 @@ function pg_to_chartab(PG)
                   5.0  0.0  0.0 -1.0  1.0 -5.0  0.0  0.0  1.0 -1.0])
             else
                 irreps, classes, chars = (["A","T1","T2","G","H"],
-                 [1,2,3,4,5],
+                 ["E", "12C_5", "12C_5^2", "20C_3", "15C_2"],
                  [1.0  1.0  1.0  1.0  1.0;
                   3.0  pr5  mr5  0.0 -1.0;
                   3.0  mr5  pr5  0.0 -1.0;
@@ -397,6 +397,30 @@ function generate_symel_to_class_map(symels::Vector{Symel}, ctab::Chartable)
             end
         end
     else
+        if pg.family == "T"
+            if pg.subfamily == "h"
+                class_map = [1,2,3,2,3,2,3,2,3,4,4,4,5,6,7,6,7,6,7,6,7,8,8,8]
+            elseif pg.subfamily == "d"
+                class_map = [1,2,2,2,2,2,2,2,2,3,3,3,5,5,5,5,5,5,4,4,4,4,4,4]
+            else
+                class_map = [1,2,3,2,3,2,3,2,3,4,4,4]
+            end
+        elseif pg.family == "O"
+            if pg.subfamily == "h"
+                class_map = [1,4,5,4,4,5,4,4,5,4,2,2,2,2,2,2,2,2,3,3,3,3,3,3,6,7,9,7,7,9,7,7,9,7,8,8,8,8,8,8,8,8,10,10,10,10,10,10]
+            else
+                class_map = [1,2,3,2,2,3,2,2,3,2,4,4,4,4,4,4,4,4,5,5,5,5,5,5]
+            end
+        elseif pg.family == "I"
+            if pg.subfamily == "h"
+                class_map = [1,2,3,3,2,2,3,3,2,2,3,3,2,2,3,3,2,2,3,3,2,2,3,3,2,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,
+                             6,7,8,8,7,7,8,8,7,7,8,8,7,7,8,8,7,7,8,8,7,7,8,8,7,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10]
+            else
+                class_map = [1,2,3,3,2,2,3,3,2,2,3,3,2,2,3,3,2,2,3,3,2,2,3,3,2,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5]
+            end
+        else
+            throw(ArgumentError("Unrecognized point group: $(ctab.name)"))
+        end
     end
     return class_map
 end
@@ -427,7 +451,6 @@ function get_euler_angles(paxis, saxis)
     x = [1.0;0.0;0.0]
     y = [0.0;1.0;0.0]
     z = [0.0;0.0;1.0]
-    println(paxis, saxis)
     ynew = paxis×saxis
     zxp = normalize!(z×paxis)
     if isnan(zxp[1])
@@ -520,9 +543,6 @@ function do_things2(pg)
     ctab = pg_to_chartab(pg)
     class_map = generate_symel_to_class_map(symels, ctab)
     mtab = build_mult_table(symels)
-    #println(mtab.table)
-    reg_reprs = build_regular_repr(mtab)
-    return reg_reprs
 end
 
 function symtext_from_file(fn)
