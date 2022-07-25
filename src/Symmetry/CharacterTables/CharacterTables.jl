@@ -1,6 +1,6 @@
 module CharacterTables
 import Base
-import Base: show
+import Base: show, getindex
 using LinearAlgebra
 using Molecules
 using Molecules:i,Cn,Sn,σ
