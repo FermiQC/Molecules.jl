@@ -9,6 +9,7 @@ struct Chartable
     classes
     class_orders
     characters
+    irrep_dims
 end
 
 struct SymText
@@ -18,6 +19,7 @@ struct SymText
     class_map
     atom_map
     mult_table
+    order
 end
 
 struct PG
@@ -53,6 +55,7 @@ function Base.:(==)(A::Symel, B::Symel)
         return false
     end
 end
+
 using Formatting
 function string_repr(ctab::Chartable)
     l = length(ctab.classes) + 1
@@ -71,6 +74,7 @@ function string_repr(ctab::Chartable)
         out *= "\n"
     end
     out *= longstrang
+    out *= "Irrep. dims.: $(ctab.irrep_dims)\n"
     return out
 end
 
@@ -83,7 +87,7 @@ function string_repr(symels::Vector{Symel})
 end
 
 function string_repr(symtext::SymText)
-    out = "SymText for the $(symtext.pg) Point Group\n"
+    out = "SymText for the $(symtext.pg) Point Group (order $(symtext.order))\n"
     out *= string_repr(symtext.ctab)
     out *= "\nSymmetry Elements (Symels)\n"
     out *= string_repr(symtext.symels)

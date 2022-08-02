@@ -249,7 +249,11 @@ function pg_to_chartab(PG)
         end
     end
     class_orders = grab_class_orders(classes)
-    return Chartable(PG, irreps, classes, class_orders, chars)
+    irr_dims = Dict{String,Int}()
+    for (irr_idx,irrep) in enumerate(irreps)
+        irr_dims[irrep] = chars[irr_idx, 1]
+    end
+    return Chartable(PG, irreps, classes, class_orders, chars, irr_dims)
 end
 
 function grab_class_orders(classes)
@@ -581,5 +585,43 @@ function symtext_from_mol(mol)
     class_map = generate_symel_to_class_map(symels, ctab)
     atom_map = get_atom_mapping(mol, symels)
     mtable = build_mult_table(symels)
-    return SymText(pg, symels, ctab, class_map, atom_map, mtable)
+    return SymText(pg, symels, ctab, class_map, atom_map, mtable, length(symels))
+end
+
+function irrep_sort_idx(irrep_str)
+    bunyon = 0
+    # g and ' always go first
+    gchk = r"g"
+    ppchk = r"''"
+    gm = occursin(gchk, irrep_str)
+    pm = occursin(ppchk, irrep_str)
+    if gm
+        bunyon += 0
+    elseif pm
+        bunyon += 10000
+    else
+        bunyon += 1000
+    end
+    bub = irrep_str[1] # the letter
+    numbro = r"(\d+)"
+    mn = match(numbro, irrep_str)
+    if mn.captures != nothing
+        bunyon += parse(Int,mn.captures[1])
+    end
+    if bub == 'A'
+        bunyon += 0
+    elseif bub == 'B'
+        bunyon += 100
+    elseif bub == 'E'
+        bunyon += 200
+    elseif bub == 'T'
+        bunyon += 300
+    elseif bub == 'G'
+        bunyon += 400
+    elseif bub == 'H'
+        bunyon += 500
+    else
+        throw(ArgumentError("Oh shit the trout population!"))
+    end
+    return bunyon
 end
