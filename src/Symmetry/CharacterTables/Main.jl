@@ -579,13 +579,13 @@ function symtext_from_mol(mol)
     mol = Molecules.translate(mol, Molecules.center_of_mass(mol))
     pg, paxis, saxis = Molecules.Symmetry.find_point_group(mol)
     symels = pg_to_symels(pg)
-    symels = rotate_symels_to_mol(symels, paxis, saxis)
-    #mol = rotate_mol_to_symels(mol, paxis, saxis)
+    #symels = rotate_symels_to_mol(symels, paxis, saxis)
+    mol = rotate_mol_to_symels(mol, paxis, saxis)
     ctab = pg_to_chartab(pg)
     class_map = generate_symel_to_class_map(symels, ctab)
     atom_map = get_atom_mapping(mol, symels)
     mtable = build_mult_table(symels)
-    return SymText(pg, symels, ctab, class_map, atom_map, mtable, length(symels))
+    return mol, SymText(pg, symels, ctab, class_map, atom_map, mtable, length(symels))
 end
 
 function irrep_sort_idx(irrep_str)
@@ -605,7 +605,7 @@ function irrep_sort_idx(irrep_str)
     bub = irrep_str[1] # the letter
     numbro = r"(\d+)"
     mn = match(numbro, irrep_str)
-    if mn.captures != nothing
+    if mn != nothing
         bunyon += parse(Int,mn.captures[1])
     end
     if bub == 'A'
