@@ -181,7 +181,7 @@ function find_c2(mol::Vector{<:Atom}, SEAs)
     return nothing
 end
 
-function is_there_ortho_c2(mol::Vector{<:Atom}, cn_axis, SEAs) where T
+function is_there_ortho_c2(mol::Vector{<:Atom}, cn_axis, SEAs)
     """
     Finds C2 axes orthogonal to principal axis 'paxis' of Molecule
     When passing a principal axis to 'c2a', 'c2b', and 'c2c', returns
