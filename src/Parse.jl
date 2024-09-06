@@ -103,7 +103,7 @@ get_xyz(M::Molecule) = get_xyz(M.atoms)
 function get_xyz(M::Vector{A}) where A <: Atom
     molstring = ""
     for atom in M
-        molstring *= format("{}   {: 15.12f}   {: 15.12f}   {: 15.12f}\n", Molecules.symbol(atom), atom.xyz...)
+        molstring *= @sprintf("%s   %15.12f   %15.12f   %15.12f\n", Molecules.symbol(atom), atom.xyz...)
     end
     return molstring
 end
