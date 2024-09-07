@@ -3,7 +3,7 @@ module Molecules
 using Unitful
 using PeriodicTable
 using LinearAlgebra
-using Formatting
+using Printf
 using StaticArrays
 
 import PhysicalConstants.CODATA2018: a_0
