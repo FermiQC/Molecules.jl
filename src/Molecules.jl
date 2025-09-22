@@ -34,6 +34,8 @@ end
 # Create Atom using regular array
 Atom(Z, mass, xyz::Array{<:Real, 1}) = Atom(Z, mass, SVector{3}(xyz))
 
+Atom(name::Symbol, xyz::AbstractVector) = Atom(elements[name].number, elements[name].atomic_mass / 1u"u", xyz)
+
 # Default charge = 0
 Molecule(atoms::Vector{A}) where A <: Atom = Molecule(atoms, 0) 
 # Default multiplicity = singlet or doublet 
