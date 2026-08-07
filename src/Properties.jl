@@ -36,8 +36,8 @@ nuclear_repulsion(M::Molecule) = nuclear_repulsion(M.atoms)
 """
     Molecules.∇nuclear_repulsion(atoms::Vector{<:Atom}, i) where A <: Atom
 
-Returns the derivative of the nuclear repulsion w.r.t the center i. Units Eₕ/Å
-""" 
+Returns the derivative of the nuclear repulsion w.r.t the center i. Units Eₕ/a₀
+"""
 function ∇nuclear_repulsion(atoms::Vector{<:Atom}, i)
     E = zeros(3)
     At = atoms[i]
@@ -53,6 +53,43 @@ function ∇nuclear_repulsion(atoms::Vector{<:Atom}, i)
     return At.Z .* E 
 end
 ∇nuclear_repulsion(M::Molecule, i) = ∇nuclear_repulsion(M.atoms, i)
+
+"""
+    Molecules.∇2nuclear_repulsion(atoms::Vector{<:Atom}, i, j) where A <: Atom
+
+Returns the second derivative of the nuclear repulsion energy w.r.t. the
+centers i and j, as a 3x3 matrix. Units Eₕ/a₀² (matching ∇nuclear_repulsion's
+convention, which despite its docstring is also per-bohr, not per-Å --
+verified against finite difference in bohr-consistent units).
+"""
+function ∇2nuclear_repulsion(atoms::Vector{<:Atom}, i, j)
+    H = zeros(3, 3)
+    Ai = atoms[i]
+    Aj = atoms[j]
+
+    if i == j
+        for B in atoms
+            B == Ai && continue
+
+            r = (Ai.xyz .- B.xyz) .* angstrom_to_bohr
+            R = √(r ⋅ r)
+
+            for l in 1:3, k in 1:3
+                H[k, l] -= Ai.Z * B.Z * ((k == l ? 1.0/R^3 : 0.0) - 3*r[k]*r[l]/R^5)
+            end
+        end
+    else
+        r = (Ai.xyz .- Aj.xyz) .* angstrom_to_bohr
+        R = √(r ⋅ r)
+
+        for l in 1:3, k in 1:3
+            H[k, l] = Ai.Z * Aj.Z * ((k == l ? 1.0/R^3 : 0.0) - 3*r[k]*r[l]/R^5)
+        end
+    end
+
+    return H
+end
+∇2nuclear_repulsion(M::Molecule, i, j) = ∇2nuclear_repulsion(M.atoms, i, j)
 
 """
     Molecules.center_of_mass(atoms::Vector{<:Atom}, i) where A <: Atom
