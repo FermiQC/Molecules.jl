@@ -58,9 +58,7 @@ end
     Molecules.∇2nuclear_repulsion(atoms::Vector{<:Atom}, i, j) where A <: Atom
 
 Returns the second derivative of the nuclear repulsion energy w.r.t. the
-centers i and j, as a 3x3 matrix. Units Eₕ/a₀² (matching ∇nuclear_repulsion's
-convention, which despite its docstring is also per-bohr, not per-Å --
-verified against finite difference in bohr-consistent units).
+centers (atoms) i and j, as a 3x3 matrix in units Eₕ/a₀². 
 """
 function ∇2nuclear_repulsion(atoms::Vector{<:Atom}, i, j)
     H = zeros(3, 3)
