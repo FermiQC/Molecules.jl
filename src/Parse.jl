@@ -5,9 +5,9 @@ Reads a xyz file and return a vector o `Atom` objects. Units can be indicated th
 
 See also: parse_string
 """
-function parse_file(file::String; unit=:angstrom)
+function parse_file(file::String; unit=:angstrom, precision=Float64)
     molstring = read(file, String)
-    parse_string(molstring::String; unit=unit)
+    parse_string(molstring::String; unit=unit, precision=precision)
 end
 
 """
@@ -17,7 +17,7 @@ Reads a String representing a XYZ file and return a vector o `Atom` objects. Uni
 
 See also: parse_file
 """
-function parse_string(molstring::String; unit=:angstrom)
+function parse_string(molstring::String; unit=:angstrom, precision=Float64)
 
     # Get a list of Atom objects from String
     if unit == :bohr
@@ -34,7 +34,7 @@ function parse_string(molstring::String; unit=:angstrom)
     # Match an atom id (String for atomic symbol or integer for atomic number) with zero or more blank spaces on the left of it
     re_id = r"\s*(\d+|\w{1,2})"
 
-    atoms = Atom[]
+    atoms = Atom{precision,precision}[]
 
     # Possible line formats
     # ID Mass X Y Z
@@ -68,7 +68,7 @@ function parse_string(molstring::String; unit=:angstrom)
             end
 
             # Get mass from PeriodicTable
-            mass = convert(Float64, elements[id].atomic_mass / 1u"u")
+            mass = convert(precision, elements[id].atomic_mass / 1u"u")
             str_xyz = m.captures[2:4]
         else
             throw(ArgumentError("Failed to process data in line $line_num:\n $(line)"))
@@ -80,9 +80,9 @@ function parse_string(molstring::String; unit=:angstrom)
         Z = elements[id].number
 
         # Convert String vector to Float vector
-        xyz = zeros(Float64, 3)
+        xyz = zeros(precision, 3)
         try
-            xyz .= parse.(Float64, str_xyz).*conv
+            xyz .= parse.(precision, str_xyz).*conv
         catch ArgumentError
             throw(ArgumentError("Failed to process XYZ coordinates in line $line_num:\n $(m[2:4])"))
         end
@@ -109,6 +109,6 @@ function get_xyz(M::Vector{A}) where A <: Atom
 end
 
 # Create Molecule object from string
-Molecule(molstring::String; unit=:angstrom) = Molecule(Molecules.parse_string(molstring, unit=unit))
-Molecule(molstring::String, charge::Int, multiplicity::Int; unit=:angstrom) = 
-Molecule(Molecules.parse_string(molstring, unit=unit), charge, multiplicity)
+Molecule(molstring::String; unit=:angstrom, precision=Float64) = Molecule(Molecules.parse_string(molstring, unit=unit, precision=precision))
+Molecule(molstring::String, charge::Int, multiplicity::Int; unit=:angstrom, precision=Float64) = 
+Molecule(Molecules.parse_string(molstring, unit=unit, precision=precision), charge, multiplicity)
