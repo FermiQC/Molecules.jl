@@ -14,7 +14,13 @@ string_repr(A::Atom) = """
     $(elements[A.Z].name) Z = $(A.Z) M = $(@sprintf("%6.4f", A.mass))
     Center: $(@sprintf("%15.10f  %15.10f  %15.10f", A.xyz...))"""
 
+compact_string_repr(A::Atom) = "$(elements[A.Z].symbol) $(@sprintf("%15.10f  %15.10f  %15.10f", A.xyz...))"
+
 # Pretty printing
 function show(io::IO, ::MIME"text/plain", X::Union{Atom, Molecule})
     print(io, string_repr(X))
+end
+
+function show(io::IO, ::MIME"text/plain", a::Atom)
+    print(io, compact_string_repr(a))
 end
